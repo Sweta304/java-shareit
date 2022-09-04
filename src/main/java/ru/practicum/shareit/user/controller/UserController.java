@@ -6,7 +6,7 @@ import ru.practicum.shareit.user.EmailException;
 import ru.practicum.shareit.user.UserAlreadyExistsException;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.ValidationException;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
@@ -26,27 +26,27 @@ public class UserController {
     }
 
     @PostMapping
-    public User addUser(@RequestBody @Valid User user) throws UserAlreadyExistsException, ValidationException, UserNotFoundException, EmailException {
+    public UserDto addUser(@RequestBody @Valid UserDto user) throws UserAlreadyExistsException, ValidationException, UserNotFoundException, EmailException {
         return userService.addUser(user);
     }
 
     @PatchMapping("/{id}")
-    public User updateUser(@RequestBody @Valid User user, @PathVariable Long id) throws UserNotFoundException, ValidationException, EmailException, UserAlreadyExistsException {
+    public UserDto updateUser(@RequestBody @Valid UserDto user, @PathVariable Long id) throws UserNotFoundException, ValidationException, EmailException, UserAlreadyExistsException {
         return userService.updateUser(user, id);
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
+    public List<UserDto> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    public User getUserById(@PathVariable Long id) throws UserNotFoundException {
+    public UserDto getUserById(@PathVariable Long id) throws UserNotFoundException {
         return userService.getUserById(id);
     }
 
     @DeleteMapping("/{id}")
-    public User deleteUser(@PathVariable Long id) throws UserNotFoundException {
+    public UserDto deleteUser(@PathVariable Long id) throws UserNotFoundException {
         return userService.deleteUser(id);
     }
 }

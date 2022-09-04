@@ -10,13 +10,13 @@ import java.util.List;
 
 @Service
 public interface ItemService {
-    public ItemDto addItem(ItemDto itemDto, Long owner) throws UserNotFoundException, ValidationException;
+    ItemDto addItem(ItemDto itemDto, Long owner) throws UserNotFoundException, ValidationException;
 
-    public ItemDto updateItem(Long itemId, Long owner, ItemDto itemDto) throws IncorrectOwnerException;
+    ItemDto updateItem(Long itemId, Long owner, ItemDto itemDto) throws IncorrectOwnerException;
 
-    public ItemDto getItem(Long itemId);
+    ItemDto getItem(Long itemId);
 
-    public List<ItemDto> getItems(Long owner);
+    List<ItemDto> getItems(Long owner);
 
-    public List<ItemDto> searchItem(String text);
+    List<ItemDto> searchItem(String text);
 }

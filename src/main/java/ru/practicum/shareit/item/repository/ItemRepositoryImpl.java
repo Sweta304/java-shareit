@@ -62,14 +62,22 @@ public class ItemRepositoryImpl implements ItemRepository {
         itemsList.stream().map(item -> ItemMapper.toItemDto(item)).collect(Collectors.toList());
         Map<Long, Item> itemsMap = new HashMap<>();
         itemsList.stream().forEach(i -> itemsMap.put(i.getId(), i));
-        List<ItemDto> foundItemsDto = itemsList.stream().filter(x -> x.getOwner().equals(owner)).map(x -> ItemMapper.toItemDto(x)).collect(Collectors.toList());
+        List<ItemDto> foundItemsDto = itemsList.stream()
+                .filter(x -> x.getOwner().equals(owner))
+                .map(x -> ItemMapper.toItemDto(x))
+                .collect(Collectors.toList());
         return foundItemsDto;
     }
 
     @Override
     public List<ItemDto> searchItem(String text) {
-        List<Item> foundItems = items.values().stream().filter(x -> (x.getName().toLowerCase().contains(text.toLowerCase()) || x.getDescription().toLowerCase().contains(text.toLowerCase())) && x.getAvailable()).collect(Collectors.toList());
-        List<ItemDto> foundItemsDto = foundItems.stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
+        String lowerCaseText = text.toLowerCase();
+        List<Item> foundItems = items.values().stream()
+                .filter(x -> (x.getName().toLowerCase().contains(lowerCaseText) || x.getDescription().toLowerCase().contains(lowerCaseText)) && x.getAvailable())
+                .collect(Collectors.toList());
+        List<ItemDto> foundItemsDto = foundItems.stream()
+                .map(ItemMapper::toItemDto)
+                .collect(Collectors.toList());
         return foundItemsDto;
     }
 

@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Objects;
@@ -8,30 +9,11 @@ import java.util.Objects;
  * // TODO .
  */
 @Data
+@AllArgsConstructor
 public class User {
     private Long id;
     private String name;
     private String email;
-
-    public static boolean validate(User user) {
-        boolean isValid = false;
-        if (!(user.getEmail() == null
-                || user.getEmail().isEmpty()
-                || user.getEmail().isBlank()
-                || (user.getId() != null && (user.getId() < 0)))
-        ) {
-            isValid = true;
-        }
-        return isValid;
-    }
-
-    public static boolean validateMail(User user) {
-        boolean isValid = false;
-        if (!user.getEmail().contains("@") && !(user.getEmail() == null)) {
-            isValid = true;
-        }
-        return isValid;
-    }
 
     @Override
     public boolean equals(Object o) {
