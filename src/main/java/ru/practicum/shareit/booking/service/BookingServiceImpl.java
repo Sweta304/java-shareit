@@ -56,7 +56,7 @@ public class BookingServiceImpl implements BookingService {
         }
         booking.setStatus(BookStatus.WAITING);
         booking.setBookerId(owner);
-        return toBookingDto(bookingJpaRepository.save(booking), item.get());
+        return toBookingDto(bookingJpaRepository.save(booking), item.get(), userJpaRepository.findById(owner).get());
     }
 
     @Override
@@ -91,7 +91,7 @@ public class BookingServiceImpl implements BookingService {
         } else {
             throw new IncorrectBookingException("Невозможно подтвердить бронирование вещи");
         }
-        return toBookingDto(bookingJpaRepository.save(booking), item);
+        return toBookingDto(bookingJpaRepository.save(booking), item, userJpaRepository.findById(booking.getBookerId()).get());
     }
 
     @Override
@@ -107,7 +107,7 @@ public class BookingServiceImpl implements BookingService {
             throw new IncorrectOwnerException("Вещь не принадлежит указанному пользователю");
         }
 
-        return toBookingDto(booking, item);
+        return toBookingDto(booking, item, userJpaRepository.findById(booking.getBookerId()).get());
     }
 
     @Override
@@ -127,7 +127,7 @@ public class BookingServiceImpl implements BookingService {
             case "ALL":
                 bookings = bookingJpaRepository.findByBookerId(bookerId)
                         .stream()
-                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get()))
+                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
                                 .reversed())
                         .collect(Collectors.toList());
@@ -135,7 +135,7 @@ public class BookingServiceImpl implements BookingService {
             case "FUTURE":
                 bookings = bookingJpaRepository.findByBookerIdAndStartIsAfter(bookerId)
                         .stream()
-                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get()))
+                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
                                 .reversed())
                         .collect(Collectors.toList());
@@ -143,7 +143,7 @@ public class BookingServiceImpl implements BookingService {
             case "PAST":
                 bookings = bookingJpaRepository.findByBookerIdAndEndIsBefore(bookerId)
                         .stream()
-                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get()))
+                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
                                 .reversed())
                         .collect(Collectors.toList());
@@ -151,16 +151,16 @@ public class BookingServiceImpl implements BookingService {
             case "CURRENT":
                 bookings = bookingJpaRepository.findByBookerIdAndCurrentState(bookerId)
                         .stream()
-                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get()))
+                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
                                 .reversed())
                         .collect(Collectors.toList());
                 break;
-                case "WAITING":
-                case "REJECTED":
+            case "WAITING":
+            case "REJECTED":
                 bookings = bookingJpaRepository.findByBookerIdAndStatus(bookerId, state)
                         .stream()
-                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get()))
+                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
                                 .reversed())
                         .collect(Collectors.toList());
@@ -193,7 +193,7 @@ public class BookingServiceImpl implements BookingService {
             case "ALL":
                 bookings = rawBookings
                         .stream()
-                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get()))
+                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
                                 .reversed())
                         .collect(Collectors.toList());
@@ -202,7 +202,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = rawBookings
                         .stream()
                         .filter(x -> x.getStart().isAfter(LocalDateTime.now()))
-                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get()))
+                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
                                 .reversed())
                         .collect(Collectors.toList());
@@ -211,7 +211,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = rawBookings
                         .stream()
                         .filter(x -> x.getEnd().isBefore(LocalDateTime.now()))
-                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get()))
+                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
                                 .reversed())
                         .collect(Collectors.toList());
@@ -220,7 +220,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = rawBookings
                         .stream()
                         .filter(x -> (x.getEnd().isAfter(LocalDateTime.now())) && x.getStart().isBefore(LocalDateTime.now()))
-                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get()))
+                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
                                 .reversed())
                         .collect(Collectors.toList());
@@ -229,7 +229,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = rawBookings
                         .stream()
                         .filter(x -> x.getStatus().equals(BookStatus.WAITING))
-                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get()))
+                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
                                 .reversed())
                         .collect(Collectors.toList());
@@ -238,7 +238,7 @@ public class BookingServiceImpl implements BookingService {
                 bookings = rawBookings
                         .stream()
                         .filter(x -> x.getStatus().equals(BookStatus.REJECTED))
-                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get()))
+                        .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
                                 .reversed())
                         .collect(Collectors.toList());
