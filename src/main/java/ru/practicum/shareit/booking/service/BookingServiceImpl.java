@@ -108,7 +108,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllBookings(Long bookerId, String rawState) throws UserNotFoundException, IncorrectBookingStatusException, IncorrectBookingException {
+    public List<BookingDto> getAllBookings(Long bookerId, String rawState) throws UserNotFoundException, IncorrectBookingStatusException {
         try {
             if (rawState.equals("ALL") ||
                     rawState.equals("FUTURE") ||
