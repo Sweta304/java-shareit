@@ -97,7 +97,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemWithBookingDatesDto> getItems(Long owner, Integer from, Integer size) throws UserNotFoundException {
+    public List<ItemWithBookingDatesDto> getItems(Long owner) throws UserNotFoundException {
         if (userRepository.findById(owner).isEmpty()) {
             throw new UserNotFoundException("Пользователя не существует с id" + owner + "не существует");
         }
