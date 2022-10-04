@@ -28,7 +28,7 @@ public class BookingServiceImpl implements BookingService {
 
     private BookingJpaRepository bookingJpaRepository;
     private ItemJpaRepository itemJpaRepository;
-    UserJpaRepository userJpaRepository;
+    private UserJpaRepository userJpaRepository;
 
     public BookingServiceImpl(BookingJpaRepository bookingJpaRepository, ItemJpaRepository itemJpaRepository, UserJpaRepository userJpaRepository) {
         this.bookingJpaRepository = bookingJpaRepository;
@@ -40,6 +40,7 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto addBooking(BookingIncomingDto bookingIncomingDto, Long owner) throws ItemNotAvailableException, ItemNotFoundException, IncorrectBookingException, UserNotFoundException {
         Booking booking = fromBookingIncomingDto(bookingIncomingDto, owner);
         Optional<Item> item = itemJpaRepository.findById(booking.getItemId());
+        Optional<User> user = userJpaRepository.findById(owner);
         if (item.isEmpty()) {
             throw new ItemNotFoundException("Вещи не существует");
         } else if (!item.get().getAvailable()) {
@@ -48,12 +49,12 @@ public class BookingServiceImpl implements BookingService {
                 || booking.getEnd().isBefore(LocalDateTime.now())
                 || booking.getEnd().isBefore(booking.getStart())) {
             throw new IncorrectBookingException("Неправильно задано время бронирования");
-        } else if (userJpaRepository.findById(owner).isEmpty()) {
+        } else if (user.isEmpty()) {
             throw new UserNotFoundException("Пользователя не существует");
         } else if (item.get().getOwner().equals(owner)) {
             throw new ItemNotFoundException("Вы не можете забронировать собственную вещь");
         }
-        return toBookingDto(bookingJpaRepository.save(booking), item.get(), userJpaRepository.findById(owner).get());
+        return toBookingDto(bookingJpaRepository.save(booking), item.get(), user.get());
     }
 
     @Override
@@ -93,11 +94,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto getBookingById(Long bookingId, Long owner) throws IncorrectOwnerException, BookingNotFoundException {
-        if (bookingJpaRepository.findById(bookingId).isEmpty()) {
+        Optional<Booking> bookingOpt = bookingJpaRepository.findById(bookingId);
+        if (bookingOpt.isEmpty()) {
             throw new BookingNotFoundException("Бронирования не существует");
         }
 
-        Booking booking = bookingJpaRepository.findById(bookingId).get();
+        Booking booking = bookingOpt.get();
         Item item = itemJpaRepository.findById(booking.getItemId()).get();
 
         if (!item.getOwner().equals(owner) && !booking.getBookerId().equals(owner)) {
