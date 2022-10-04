@@ -160,7 +160,7 @@ public class BookingServiceImpl implements BookingService {
                 break;
             case "WAITING":
             case "REJECTED":
-                bookings = bookingJpaRepository.findByBookerIdAndStatus(bookerId, rawState)
+                bookings = bookingJpaRepository.findByBookerIdAndStatus(bookerId, BookStatus.valueOf(rawState))
                         .stream()
                         .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
