@@ -121,7 +121,7 @@ public class BookingServiceImpl implements BookingService {
         } catch (IllegalArgumentException e) {
             throw new IncorrectBookingStatusException("некорректный статус бронирования");
         }
-        List<BookingDto> bookings = new ArrayList<>();
+        List<BookingDto> bookings;
         if (userJpaRepository.findById(bookerId).isEmpty()) {
             throw new UserNotFoundException("Пользователя не существует");
         }
@@ -160,7 +160,7 @@ public class BookingServiceImpl implements BookingService {
                 break;
             case "WAITING":
             case "REJECTED":
-                bookings = bookingJpaRepository.findByBookerIdAndStatus(bookerId, state)
+                bookings = bookingJpaRepository.findByBookerIdAndStatus(bookerId, rawState)
                         .stream()
                         .map(x -> toBookingDto(x, itemJpaRepository.findById(x.getItemId()).get(), userJpaRepository.findById(x.getBookerId()).get()))
                         .sorted(Comparator.comparing(BookingDto::getStart)
@@ -180,7 +180,7 @@ public class BookingServiceImpl implements BookingService {
                 .stream()
                 .filter(x -> itemJpaRepository.findById(x.getItemId()).get().getOwner().equals(owner))
                 .collect(Collectors.toList());
-        List<BookingDto> bookings = new ArrayList<>();
+        List<BookingDto> bookings;
         try {
             if (state.equals("ALL") ||
                     state.equals("FUTURE") ||
