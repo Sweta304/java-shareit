@@ -6,9 +6,7 @@ import ru.practicum.shareit.booking.model.Booking;
 
 import java.util.List;
 
-/**
- * // TODO .
- */
+
 @Data
 @AllArgsConstructor
 public class ItemWithBookingDatesDto {

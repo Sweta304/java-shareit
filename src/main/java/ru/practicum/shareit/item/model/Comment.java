@@ -6,9 +6,7 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
-/**
- * // TODO .
- */
+
 @Entity
 @Table(name = "comments")
 @Data

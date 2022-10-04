@@ -8,9 +8,7 @@ import ru.practicum.shareit.booking.BookStatus;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-/**
- * // TODO .
- */
+
 @Entity
 @Table(name = "booking")
 @Data

@@ -22,10 +22,7 @@ import ru.practicum.shareit.user.ValidationException;
 import ru.practicum.shareit.user.repository.UserJpaRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.item.CommentMapper.toCommentDto;
@@ -61,10 +58,11 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto updateItem(Long itemId, Long owner, ItemDto itemDto) throws IncorrectOwnerException, ItemNotFoundException {
-        if (itemRepository.findById(itemId).isEmpty()) {
+        Optional<Item> itemOptional = itemRepository.findById(itemId);
+        if (itemOptional.isEmpty()) {
             throw new ItemNotFoundException("Запрашиваемой вещи не существует");
         }
-        Item item = itemRepository.findById(itemId).get();
+        Item item = itemOptional.get();
         if (!(item.getOwner().equals(owner))) {
             throw new IncorrectOwnerException("Вещь не принадлежит указанному пользователю");
         }
@@ -84,48 +82,22 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemWithBooking getItem(Long itemId, Long owner) throws ItemNotFoundException {
-        if (itemRepository.findById(itemId).isEmpty()) {
+        Optional<Item> itemOptional = itemRepository.findById(itemId);
+        if (itemOptional.isEmpty()) {
             throw new ItemNotFoundException("Запрашиваемой вещи не существует");
         }
 
-        Item item = itemRepository.findById(itemId).get();
-        List<Booking> bookings = bookingJpaRepository.findByItemId(itemId);
-        Booking lastBooking = new Booking();
-        Booking nextBooking = new Booking();
-        if (!bookings
-                .stream()
-                .filter(x -> x.getEnd().isBefore(LocalDateTime.now()))
-                .collect(Collectors.toList())
-                .isEmpty()) {
-            lastBooking = bookings
-                    .stream()
-                    .filter(x -> x.getEnd().isBefore(LocalDateTime.now()))
-                    .sorted(Comparator.comparing(Booking::getStart).reversed())
-                    .findFirst()
-                    .get();
-        }
+        Item item = itemOptional.get();
 
-        if (!bookings
-                .stream()
-                .filter(x -> x.getStart().isAfter(LocalDateTime.now()))
-                .collect(Collectors.toList())
-                .isEmpty()) {
-            nextBooking = bookings
-                    .stream()
-                    .filter(x -> x.getStart().isAfter(LocalDateTime.now()))
-                    .sorted(Comparator.comparing(Booking::getStart))
-                    .findFirst()
-                    .get();
-        }
-        if (owner.equals(itemRepository.findById(itemId).get().getOwner())) {
-            return toItemWithBooking(item, lastBooking, nextBooking, getCommentsList(commentJpaRepository.findCommentsByItemId(itemId)));
+        if (owner.equals(itemOptional.get().getOwner())) {
+            return toItemWithBooking(item, findLastBookingForItem(item.getId()), findNextBookingForItem(item.getId()), getCommentsList(commentJpaRepository.findCommentsByItemId(itemId)));
         } else {
             return toItemWithBooking(item, null, null, getCommentsList(commentJpaRepository.findCommentsByItemId(itemId)));
         }
     }
 
     @Override
-    public List<ItemWithBookingDatesDto> getItems(Long owner) throws UserNotFoundException {
+    public List<ItemWithBookingDatesDto> getItems(Long owner, Integer from, Integer size) throws UserNotFoundException {
         if (userRepository.findById(owner).isEmpty()) {
             throw new UserNotFoundException("Пользователя не существует с id" + owner + "не существует");
         }
@@ -153,17 +125,13 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public CommentDto addComment(Comment comment, Long itemId, Long owner) throws IncorrectBookingException, IncorrectCommentException {
-        if (bookingJpaRepository.findByItemId(itemId)
-                .stream()
-                .filter(x -> x.getBookerId().equals(owner) && x.getStatus().equals(BookStatus.APPROVED))
-                .findAny()
-                .isEmpty()) {
+        List<Booking> bookings = bookingJpaRepository.findByBookerIdAndItemIdAndStatus(owner, itemId, BookStatus.APPROVED);
+        if (bookings.isEmpty()) {
             throw new IncorrectBookingException("вы не брали данную вещь в аренду");
         } else if (comment.getText() == null || comment.getText().isBlank() || comment.getText().isEmpty()) {
             throw new IncorrectCommentException("комментарий не может быть пустым!");
-        } else if (bookingJpaRepository.findByItemId(itemId)
+        } else if (bookings
                 .stream()
-                .filter(x -> x.getBookerId().equals(owner) && x.getStatus().equals(BookStatus.APPROVED))
                 .filter(x -> x.getEnd().isBefore(LocalDateTime.now()))
                 .findAny()
                 .isEmpty()) {
@@ -175,6 +143,7 @@ public class ItemServiceImpl implements ItemService {
             return toCommentDto(commentJpaRepository.save(comment), author);
         }
     }
+
 
     private Booking findNextBookingForItem(Long itemId) {
         List<Booking> nextBookings = bookingJpaRepository.findByItemId(itemId)

@@ -12,7 +12,6 @@ import java.util.List;
 
 @Data
 public class ItemMapper {
-    private Item item;
 
     public static ItemDto toItemDto(Item item) {
         return new ItemDto(

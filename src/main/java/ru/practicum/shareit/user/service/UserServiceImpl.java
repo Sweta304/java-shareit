@@ -12,6 +12,7 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserJpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.user.UserMapper.fromUserDto;
@@ -40,19 +41,17 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto updateUser(UserDto userDto, Long id) throws UserNotFoundException, EmailException, UserAlreadyExistsException {
-        User user = userRepository.findById(id).get();
-        if (user == null) {
+        Optional<User> userOptional = userRepository.findById(id);
+        if (userOptional.isEmpty()) {
             throw new UserNotFoundException("такого пользователя не существует");
-        } else if (userDto.getEmail() != null &&
+        }
+        User user = userOptional.get();
+        if (userDto.getEmail() != null &&
                 (userDto.getEmail().isEmpty()
                         || userDto.getEmail().isBlank())) {
             throw new EmailException("некорректный Email");
         } else if (userDto.getEmail() != null
-                && getAllUsers().stream()
-                .filter(x -> x.getEmail().equals(user.getEmail()))
-                .filter(x -> x.getId() != user.getId())
-                .findAny()
-                .isPresent()) {
+                && userRepository.findByEmail(userDto.getEmail()) != null) {
             throw new UserAlreadyExistsException("пользователь с таким Email уже существует");
         } else if (userDto.getEmail() != null) {
             user.setEmail(userDto.getEmail());
@@ -79,12 +78,12 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto deleteUser(Long id) throws UserNotFoundException {
-        User user = userRepository.findById(id).get();
-        if (user == null) {
+        Optional<User> userOptional = userRepository.findById(id);
+        if (userOptional.isEmpty()) {
             throw new UserNotFoundException("пользователь с id " + id + " не существует");
-        } else {
-            userRepository.delete(user);
         }
+        User user = userOptional.get();
+        userRepository.delete(user);
         return toUserDto(user);
     }
 }

@@ -6,7 +6,7 @@ import ru.practicum.shareit.booking.BookingNotFoundException;
 import ru.practicum.shareit.booking.IncorrectBookingException;
 import ru.practicum.shareit.booking.IncorrectBookingStatusException;
 import ru.practicum.shareit.booking.dto.BookingDto;
-import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.dto.BookingIncomingDto;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.item.ItemNotAvailableException;
 import ru.practicum.shareit.item.ItemNotFoundException;
@@ -16,9 +16,6 @@ import ru.practicum.shareit.user.UserNotFoundException;
 import javax.validation.Valid;
 import java.util.List;
 
-/**
- * // TODO .
- */
 @RestController
 @RequestMapping(path = "/bookings")
 public class BookingController {
@@ -30,8 +27,8 @@ public class BookingController {
     }
 
     @PostMapping
-    public BookingDto addBooking(@RequestBody @Valid Booking booking, @RequestHeader("X-Sharer-User-Id") Long booker) throws ItemNotAvailableException, ItemNotFoundException, IncorrectBookingException, UserNotFoundException {
-        return bookingService.addBooking(booking, booker);
+    public BookingDto addBooking(@RequestBody @Valid BookingIncomingDto bookingIncomingDto, @RequestHeader("X-Sharer-User-Id") Long booker) throws ItemNotAvailableException, ItemNotFoundException, IncorrectBookingException, UserNotFoundException {
+        return bookingService.addBooking(bookingIncomingDto, booker);
     }
 
     @PatchMapping("/{bookingId}")

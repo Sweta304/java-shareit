@@ -1,11 +1,9 @@
 package ru.practicum.shareit.booking.service;
 
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.BookStatus;
-import ru.practicum.shareit.booking.BookingNotFoundException;
-import ru.practicum.shareit.booking.IncorrectBookingException;
-import ru.practicum.shareit.booking.IncorrectBookingStatusException;
+import ru.practicum.shareit.booking.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingIncomingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingJpaRepository;
 import ru.practicum.shareit.item.ItemNotAvailableException;
@@ -17,12 +15,12 @@ import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.repository.UserJpaRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static ru.practicum.shareit.booking.BookingMapper.fromBookingIncomingDto;
 import static ru.practicum.shareit.booking.BookingMapper.toBookingDto;
 
 @Service
@@ -39,7 +37,8 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto addBooking(Booking booking, Long owner) throws ItemNotAvailableException, ItemNotFoundException, IncorrectBookingException, UserNotFoundException {
+    public BookingDto addBooking(BookingIncomingDto bookingIncomingDto, Long owner) throws ItemNotAvailableException, ItemNotFoundException, IncorrectBookingException, UserNotFoundException {
+        Booking booking = fromBookingIncomingDto(bookingIncomingDto, owner);
         Optional<Item> item = itemJpaRepository.findById(booking.getItemId());
         if (item.isEmpty()) {
             throw new ItemNotFoundException("Вещи не существует");
@@ -54,8 +53,6 @@ public class BookingServiceImpl implements BookingService {
         } else if (item.get().getOwner().equals(owner)) {
             throw new ItemNotFoundException("Вы не можете забронировать собственную вещь");
         }
-        booking.setStatus(BookStatus.WAITING);
-        booking.setBookerId(owner);
         return toBookingDto(bookingJpaRepository.save(booking), item.get(), userJpaRepository.findById(owner).get());
     }
 
@@ -111,10 +108,16 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllBookings(Long bookerId, String rawState) throws UserNotFoundException, IncorrectBookingStatusException {
-        BookStatus state;
+    public List<BookingDto> getAllBookings(Long bookerId, String rawState, Integer from, Integer size) throws UserNotFoundException, IncorrectBookingStatusException, IncorrectBookingException {
         try {
-            state = BookStatus.valueOf(rawState);
+            if (rawState.equals("ALL") ||
+                    rawState.equals("FUTURE") ||
+                    rawState.equals("CURRENT") ||
+                    rawState.equals("PAST")) {
+                BookCondition.valueOf(rawState);
+            } else {
+                BookStatus.valueOf(rawState);
+            }
         } catch (IllegalArgumentException e) {
             throw new IncorrectBookingStatusException("некорректный статус бронирования");
         }
@@ -122,8 +125,7 @@ public class BookingServiceImpl implements BookingService {
         if (userJpaRepository.findById(bookerId).isEmpty()) {
             throw new UserNotFoundException("Пользователя не существует");
         }
-
-        switch (state.toString()) {
+        switch (rawState) {
             case "ALL":
                 bookings = bookingJpaRepository.findByBookerId(bookerId)
                         .stream()
@@ -180,7 +182,14 @@ public class BookingServiceImpl implements BookingService {
                 .collect(Collectors.toList());
         List<BookingDto> bookings = new ArrayList<>();
         try {
-            BookStatus status = BookStatus.valueOf(state);
+            if (state.equals("ALL") ||
+                    state.equals("FUTURE") ||
+                    state.equals("CURRENT") ||
+                    state.equals("PAST")) {
+                BookCondition.valueOf(state);
+            } else {
+                BookStatus.valueOf(state);
+            }
         } catch (IllegalArgumentException e) {
             throw new IncorrectBookingStatusException("некорректный статус бронирования");
         }
