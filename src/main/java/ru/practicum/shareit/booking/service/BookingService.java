@@ -13,7 +13,7 @@ import ru.practicum.shareit.user.UserNotFoundException;
 
 import java.util.List;
 
-@Service
+
 public interface BookingService {
     BookingDto addBooking(BookingIncomingDto bookingIncomingDto, Long owner) throws ItemNotAvailableException, ItemNotFoundException, IncorrectBookingException, UserNotFoundException;
 
