@@ -3,7 +3,6 @@ package ru.practicum.shareit.booking.service;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.*;
-import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingIncomingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingJpaRepository;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.booking.BookingMapper.fromBookingIncomingDto;
-import static ru.practicum.shareit.booking.BookingMapper.toBookingDto;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -38,7 +36,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDto addBooking(BookingIncomingDto bookingIncomingDto, Long owner) throws ItemNotAvailableException, ItemNotFoundException, IncorrectBookingException, UserNotFoundException {
+    public Booking addBooking(BookingIncomingDto bookingIncomingDto, Long owner) throws ItemNotAvailableException, ItemNotFoundException, IncorrectBookingException, UserNotFoundException {
         Item item = itemJpaRepository.findById(bookingIncomingDto.getItemId()).orElseThrow(() -> new ItemNotFoundException("Вещи не существует"));
         User user = userJpaRepository.findById(owner).orElseThrow(() -> new UserNotFoundException("Пользователя не существует"));
         Booking booking = fromBookingIncomingDto(bookingIncomingDto, user, item);
@@ -51,11 +49,11 @@ public class BookingServiceImpl implements BookingService {
         } else if (item.getOwner().getId().equals(owner)) {
             throw new ItemNotFoundException("Вы не можете забронировать собственную вещь");
         }
-        return toBookingDto(bookingJpaRepository.save(booking), item, user);
+        return bookingJpaRepository.save(booking);
     }
 
     @Override
-    public BookingDto setBookingStatus(Long bookingId, Boolean approved, Long owner) throws IncorrectOwnerException, IncorrectBookingException, ItemNotFoundException {
+    public Booking setBookingStatus(Long bookingId, Boolean approved, Long owner) throws IncorrectOwnerException, IncorrectBookingException, ItemNotFoundException {
         Booking booking = bookingJpaRepository.findById(bookingId).orElseThrow(() -> new IncorrectBookingException("Проверьте корректность данных"));
         Item item = itemJpaRepository.findById(booking.getItem().getId()).orElseThrow(() -> new ItemNotFoundException("Вещи не существует"));
 
@@ -72,11 +70,11 @@ public class BookingServiceImpl implements BookingService {
         } else {
             throw new IncorrectBookingException("Невозможно подтвердить бронирование вещи");
         }
-        return toBookingDto(bookingJpaRepository.save(booking), item, userJpaRepository.findById(booking.getBooker().getId()).get());
+        return bookingJpaRepository.save(booking);
     }
 
     @Override
-    public BookingDto getBookingById(Long bookingId, Long owner) throws IncorrectOwnerException, BookingNotFoundException, ItemNotFoundException {
+    public Booking getBookingById(Long bookingId, Long owner) throws IncorrectOwnerException, BookingNotFoundException, ItemNotFoundException {
 
         Booking booking = bookingJpaRepository.findById(bookingId).orElseThrow(() -> new BookingNotFoundException("Бронирования не существует"));
         Item item = itemJpaRepository.findById(booking.getItem().getId()).orElseThrow(() -> new ItemNotFoundException("Вещи не существует"));
@@ -85,7 +83,7 @@ public class BookingServiceImpl implements BookingService {
             throw new IncorrectOwnerException("Вещь не принадлежит указанному пользователю");
         }
 
-        return toBookingDto(booking, item, userJpaRepository.findById(booking.getBooker().getId()).get());
+        return booking;
     }
 
     @Override

@@ -2,7 +2,6 @@ package ru.practicum.shareit.booking;
 
 import lombok.Data;
 import ru.practicum.shareit.booking.dto.BookerDto;
-import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingIncomingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.model.Item;
@@ -10,17 +9,6 @@ import ru.practicum.shareit.user.model.User;
 
 @Data
 public class BookingMapper {
-
-    public static BookingDto toBookingDto(Booking booking, Item item, User booker) {
-        return new BookingDto(
-                booking.getId(),
-                booking.getStart(),
-                booking.getEnd(),
-                item,
-                booker,
-                booking.getStatus()
-        );
-    }
 
     public static Booking fromBookingIncomingDto(BookingIncomingDto bookingIncomingDto, User owner, Item item) {
         Booking booking = new Booking();
