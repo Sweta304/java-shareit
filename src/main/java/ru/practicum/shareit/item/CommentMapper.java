@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 
 @Data
 public class CommentMapper {
-    private Comment comment;
 
     public static CommentDto toCommentDto(Comment comment, String authorName) {
         return new CommentDto(

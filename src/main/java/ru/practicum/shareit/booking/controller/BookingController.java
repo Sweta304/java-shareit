@@ -7,6 +7,7 @@ import ru.practicum.shareit.booking.IncorrectBookingException;
 import ru.practicum.shareit.booking.IncorrectBookingStatusException;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingIncomingDto;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.item.ItemNotAvailableException;
 import ru.practicum.shareit.item.ItemNotFoundException;
@@ -37,17 +38,17 @@ public class BookingController {
     }
 
     @GetMapping("/{bookingId}")
-    public BookingDto getBookingById(@PathVariable Long bookingId, @RequestHeader("X-Sharer-User-Id") Long owner) throws IncorrectOwnerException, BookingNotFoundException {
+    public BookingDto getBookingById(@PathVariable Long bookingId, @RequestHeader("X-Sharer-User-Id") Long owner) throws IncorrectOwnerException, BookingNotFoundException, ItemNotFoundException {
         return bookingService.getBookingById(bookingId, owner);
     }
 
     @GetMapping
-    public List<BookingDto> getAllBookings(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam(required = false, defaultValue = "ALL") String state) throws UserNotFoundException, IncorrectBookingStatusException {
+    public List<Booking> getAllBookings(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam(required = false, defaultValue = "ALL") String state) throws UserNotFoundException, IncorrectBookingStatusException {
         return bookingService.getAllBookings(owner, state);
     }
 
     @GetMapping("/owner")
-    public List<BookingDto> getAllBookingsByOwnerItems(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam(required = false, defaultValue = "ALL") String state) throws UserNotFoundException, IncorrectBookingStatusException {
+    public List<Booking> getAllBookingsByOwnerItems(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam(required = false, defaultValue = "ALL") String state) throws UserNotFoundException, IncorrectBookingStatusException {
         return bookingService.getAllBookingsByOwnerItems(owner, state);
     }
 }

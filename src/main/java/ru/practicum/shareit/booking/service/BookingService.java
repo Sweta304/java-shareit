@@ -1,11 +1,11 @@
 package ru.practicum.shareit.booking.service;
 
-import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingNotFoundException;
 import ru.practicum.shareit.booking.IncorrectBookingException;
 import ru.practicum.shareit.booking.IncorrectBookingStatusException;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingIncomingDto;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.ItemNotAvailableException;
 import ru.practicum.shareit.item.ItemNotFoundException;
 import ru.practicum.shareit.user.IncorrectOwnerException;
@@ -19,7 +19,9 @@ public interface BookingService {
 
     BookingDto setBookingStatus(Long bookingId, Boolean approved, Long owner) throws IncorrectOwnerException, IncorrectBookingException, ItemNotFoundException;
 
-    BookingDto getBookingById(Long bookingId, Long owner) throws IncorrectOwnerException, BookingNotFoundException;
-    List<BookingDto> getAllBookings(Long owner, String state) throws UserNotFoundException, IncorrectBookingStatusException;
-    List<BookingDto> getAllBookingsByOwnerItems(Long owner, String state) throws UserNotFoundException, IncorrectBookingStatusException;
+    BookingDto getBookingById(Long bookingId, Long owner) throws IncorrectOwnerException, BookingNotFoundException, ItemNotFoundException;
+
+    List<Booking> getAllBookings(Long owner, String state) throws UserNotFoundException, IncorrectBookingStatusException;
+
+    List<Booking> getAllBookingsByOwnerItems(Long owner, String state) throws UserNotFoundException, IncorrectBookingStatusException;
 }

@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.BookStatus;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -22,10 +24,12 @@ public class Booking {
     private LocalDateTime start;
     @Column(name = "booking_end")
     private LocalDateTime end;
-    @Column(name = "item_id")
-    private Long itemId;
-    @Column(name = "booker_id")
-    private Long bookerId;
+    @OneToOne
+    @JoinColumn(name = "item_id")
+    private Item item;
+    @OneToOne
+    @JoinColumn(name = "booker_id")
+    private User booker;
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private BookStatus status;
