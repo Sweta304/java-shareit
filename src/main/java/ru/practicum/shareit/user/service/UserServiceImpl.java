@@ -1,5 +1,6 @@
 package ru.practicum.shareit.user.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.user.EmailException;
@@ -7,37 +8,82 @@ import ru.practicum.shareit.user.UserAlreadyExistsException;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.ValidationException;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.repository.UserRepository;
+import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.UserJpaRepository;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static ru.practicum.shareit.user.UserMapper.fromUserDto;
+import static ru.practicum.shareit.user.UserMapper.toUserDto;
 
 @Service
+@Slf4j
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
+    private final UserJpaRepository userRepository;
 
     @Autowired
-    public UserServiceImpl(UserRepository UserRepository) {
-        this.userRepository = UserRepository;
+    public UserServiceImpl(UserJpaRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
-    public UserDto addUser(UserDto user) throws UserAlreadyExistsException, ValidationException, UserNotFoundException, EmailException {
-        return userRepository.addUser(user);
+    public UserDto addUser(UserDto userDto) throws UserAlreadyExistsException, ValidationException, EmailException {
+        User user = fromUserDto(userDto);
+        if (!UserDto.validate(userDto)) {
+            log.error("валидация пользователя не пройдена");
+            throw new ValidationException("данные о пользователе указаны некорректно");
+        } else if (UserDto.validateMail(userDto)) {
+            throw new EmailException("некорректный Email");
+        }
+        return toUserDto(userRepository.save(user));
     }
 
-    public UserDto updateUser(UserDto user, Long id) throws UserNotFoundException, ValidationException, EmailException, UserAlreadyExistsException {
-        return userRepository.updateUser(user, id);
+    public UserDto updateUser(UserDto userDto, Long id) throws UserNotFoundException, EmailException, UserAlreadyExistsException {
+        Optional<User> userOptional = userRepository.findById(id);
+        if (userOptional.isEmpty()) {
+            throw new UserNotFoundException("такого пользователя не существует");
+        }
+        User user = userOptional.get();
+        if (userDto.getEmail() != null &&
+                (userDto.getEmail().isEmpty()
+                        || userDto.getEmail().isBlank())) {
+            throw new EmailException("некорректный Email");
+        } else if (userDto.getEmail() != null
+                && userRepository.findByEmail(userDto.getEmail()) != null) {
+            throw new UserAlreadyExistsException("пользователь с таким Email уже существует");
+        } else if (userDto.getEmail() != null) {
+            user.setEmail(userDto.getEmail());
+        }
+        if (userDto.getName() != null) {
+            user.setName(userDto.getName());
+        }
+        return toUserDto(userRepository.save(user));
     }
 
     public List<UserDto> getAllUsers() {
-        return userRepository.getAllUsers();
+        return userRepository.findAll()
+                .stream()
+                .map(x -> toUserDto(x))
+                .collect(Collectors.toList());
     }
 
     public UserDto getUserById(Long id) throws UserNotFoundException {
-        return userRepository.getUserById(id);
+        if (!userRepository.findById(id).isPresent()) {
+            throw new UserNotFoundException("пользователь с id " + id + " не существует");
+        }
+        User user = userRepository.findById(id).get();
+        return toUserDto(user);
     }
 
     public UserDto deleteUser(Long id) throws UserNotFoundException {
-        return userRepository.deleteUser(id);
+        Optional<User> userOptional = userRepository.findById(id);
+        if (userOptional.isEmpty()) {
+            throw new UserNotFoundException("пользователь с id " + id + " не существует");
+        }
+        User user = userOptional.get();
+        userRepository.delete(user);
+        return toUserDto(user);
     }
 }

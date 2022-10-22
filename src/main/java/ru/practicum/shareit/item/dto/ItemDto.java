@@ -2,11 +2,8 @@ package ru.practicum.shareit.item.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import ru.practicum.shareit.user.model.User;
 
-/**
- * // TODO .
- */
+
 @Data
 @AllArgsConstructor
 public class ItemDto {
