@@ -1,8 +1,11 @@
 package ru.practicum.shareit.booking.service;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.*;
+import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingIncomingDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingJpaRepository;
@@ -14,6 +17,8 @@ import ru.practicum.shareit.user.IncorrectOwnerException;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserJpaRepository;
+import ru.practicum.shareit.utils.MyPageable;
+import ru.practicum.shareit.utils.PaginationNotCorrectException;
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -21,13 +26,15 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.booking.BookingMapper.fromBookingIncomingDto;
+import static ru.practicum.shareit.booking.BookingMapper.toBookingDto;
+import static ru.practicum.shareit.utils.PaginationValidation.validatePagination;
 
 @Service
 public class BookingServiceImpl implements BookingService {
 
-    private BookingJpaRepository bookingJpaRepository;
-    private ItemJpaRepository itemJpaRepository;
-    private UserJpaRepository userJpaRepository;
+    private final BookingJpaRepository bookingJpaRepository;
+    private final ItemJpaRepository itemJpaRepository;
+    private final UserJpaRepository userJpaRepository;
 
     public BookingServiceImpl(BookingJpaRepository bookingJpaRepository, ItemJpaRepository itemJpaRepository, UserJpaRepository userJpaRepository) {
         this.bookingJpaRepository = bookingJpaRepository;
@@ -36,7 +43,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Booking addBooking(BookingIncomingDto bookingIncomingDto, Long owner) throws ItemNotAvailableException, ItemNotFoundException, IncorrectBookingException, UserNotFoundException {
+    public BookingDto addBooking(BookingIncomingDto bookingIncomingDto, Long owner) throws ItemNotAvailableException, ItemNotFoundException, IncorrectBookingException, UserNotFoundException {
         Item item = itemJpaRepository.findById(bookingIncomingDto.getItemId()).orElseThrow(() -> new ItemNotFoundException("Вещи не существует"));
         User user = userJpaRepository.findById(owner).orElseThrow(() -> new UserNotFoundException("Пользователя не существует"));
         Booking booking = fromBookingIncomingDto(bookingIncomingDto, user, item);
@@ -49,11 +56,11 @@ public class BookingServiceImpl implements BookingService {
         } else if (item.getOwner().getId().equals(owner)) {
             throw new ItemNotFoundException("Вы не можете забронировать собственную вещь");
         }
-        return bookingJpaRepository.save(booking);
+        return toBookingDto(bookingJpaRepository.save(booking));
     }
 
     @Override
-    public Booking setBookingStatus(Long bookingId, Boolean approved, Long owner) throws IncorrectOwnerException, IncorrectBookingException, ItemNotFoundException {
+    public BookingDto setBookingStatus(Long bookingId, Boolean approved, Long owner) throws IncorrectOwnerException, IncorrectBookingException, ItemNotFoundException {
         Booking booking = bookingJpaRepository.findById(bookingId).orElseThrow(() -> new IncorrectBookingException("Проверьте корректность данных"));
         Item item = itemJpaRepository.findById(booking.getItem().getId()).orElseThrow(() -> new ItemNotFoundException("Вещи не существует"));
 
@@ -70,11 +77,11 @@ public class BookingServiceImpl implements BookingService {
         } else {
             throw new IncorrectBookingException("Невозможно подтвердить бронирование вещи");
         }
-        return bookingJpaRepository.save(booking);
+        return toBookingDto(bookingJpaRepository.save(booking));
     }
 
     @Override
-    public Booking getBookingById(Long bookingId, Long owner) throws IncorrectOwnerException, BookingNotFoundException, ItemNotFoundException {
+    public BookingDto getBookingById(Long bookingId, Long owner) throws IncorrectOwnerException, BookingNotFoundException, ItemNotFoundException {
 
         Booking booking = bookingJpaRepository.findById(bookingId).orElseThrow(() -> new BookingNotFoundException("Бронирования не существует"));
         Item item = itemJpaRepository.findById(booking.getItem().getId()).orElseThrow(() -> new ItemNotFoundException("Вещи не существует"));
@@ -83,11 +90,11 @@ public class BookingServiceImpl implements BookingService {
             throw new IncorrectOwnerException("Вещь не принадлежит указанному пользователю");
         }
 
-        return booking;
+        return toBookingDto(booking);
     }
 
     @Override
-    public List<Booking> getAllBookings(Long bookerId, String rawState) throws UserNotFoundException, IncorrectBookingStatusException {
+    public List<BookingDto> getAllBookings(Long bookerId, String rawState, Integer from, Integer size) throws UserNotFoundException, IncorrectBookingStatusException, PaginationNotCorrectException {
         try {
             if (rawState.equals("ALL") ||
                     rawState.equals("FUTURE") ||
@@ -101,36 +108,72 @@ public class BookingServiceImpl implements BookingService {
             throw new IncorrectBookingStatusException("некорректный статус бронирования");
         }
         List<Booking> bookings;
-        Sort sort = Sort.by(Sort.Direction.DESC, "start");
         if (userJpaRepository.findById(bookerId).isEmpty()) {
             throw new UserNotFoundException("Пользователя не существует");
         }
+        if (from != null && size != null && !validatePagination(from, size)) {
+            throw new PaginationNotCorrectException("Некорректные условия постраничного вывода");
+        }
+        Sort sort = Sort.by(Sort.Direction.DESC, "start");
+
         switch (rawState) {
             case "ALL":
-                bookings = bookingJpaRepository.findByBookerId(bookerId, sort);
+                if (from != null && size != null) {
+                    Pageable page = new MyPageable(from, size, sort);
+                    Page<Booking> requestPage = bookingJpaRepository.findByBookerId(bookerId, page);
+                    bookings = requestPage.getContent();
+                } else {
+                    bookings = bookingJpaRepository.findByBookerId(bookerId, sort);
+                }
                 break;
             case "FUTURE":
-                bookings = bookingJpaRepository.findByBookerIdAndStartIsAfter(bookerId);
+                if (from != null && size != null) {
+                    Pageable page = new MyPageable(from, size, sort);
+                    Page<Booking> requestPage = bookingJpaRepository.findByBookerIdAndStartIsAfter(bookerId, page);
+                    bookings = requestPage.getContent();
+                } else {
+                    bookings = bookingJpaRepository.findByBookerIdAndStartIsAfter(bookerId);
+                }
                 break;
             case "PAST":
-                bookings = bookingJpaRepository.findByBookerIdAndEndIsBefore(bookerId);
+                if (from != null && size != null) {
+                    Pageable page = new MyPageable(from, size, sort);
+                    Page<Booking> requestPage = bookingJpaRepository.findByBookerIdAndEndIsBefore(bookerId, page);
+                    bookings = requestPage.getContent();
+                } else {
+                    bookings = bookingJpaRepository.findByBookerIdAndEndIsBefore(bookerId);
+                }
                 break;
             case "CURRENT":
-                bookings = bookingJpaRepository.findByBookerIdAndCurrentState(bookerId);
+                if (from != null && size != null) {
+                    Pageable page = new MyPageable(from, size, sort);
+                    Page<Booking> requestPage = bookingJpaRepository.findByBookerIdAndCurrentState(bookerId, page);
+                    bookings = requestPage.getContent();
+                } else {
+                    bookings = bookingJpaRepository.findByBookerIdAndCurrentState(bookerId);
+                }
                 break;
             case "WAITING":
             case "REJECTED":
-                bookings = bookingJpaRepository.findByBookerIdAndStatus(bookerId, BookStatus.valueOf(rawState), sort);
+                if (from != null && size != null) {
+                    Pageable page = new MyPageable(from, size, sort);
+                    Page<Booking> requestPage = bookingJpaRepository.findByBookerIdAndStatus(bookerId, BookStatus.valueOf(rawState), page);
+                    bookings = requestPage.getContent();
+                } else {
+                    bookings = bookingJpaRepository.findByBookerIdAndStatus(bookerId, BookStatus.valueOf(rawState), sort);
+                }
                 break;
             default:
                 throw new IncorrectBookingStatusException("Unknown state: UNSUPPORTED_STATUS");
 
         }
-        return bookings;
+        return bookings.stream()
+                .map(x -> toBookingDto(x))
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Booking> getAllBookingsByOwnerItems(Long owner, String state) throws UserNotFoundException, IncorrectBookingStatusException {
+    public List<BookingDto> getAllBookingsByOwnerItems(Long owner, String state, Integer from, Integer size) throws UserNotFoundException, IncorrectBookingStatusException, PaginationNotCorrectException {
         List<Booking> rawBookings = bookingJpaRepository.findAll()
                 .stream()
                 .filter(x -> itemJpaRepository.findById(x.getItem().getId()).get().getOwner().getId().equals(owner))
@@ -154,7 +197,20 @@ public class BookingServiceImpl implements BookingService {
         if (userJpaRepository.findById(owner).isEmpty()) {
             throw new UserNotFoundException("Пользователя не существует");
         }
-
+        Sort sort = Sort.by(Sort.Direction.DESC, "start");
+        if (from != null && size != null && !validatePagination(from, size)) {
+            throw new PaginationNotCorrectException("Некорректные условия постраничного вывода");
+        }
+        if (from != null && size != null) {
+            Pageable page = new MyPageable(from, size, sort);
+            Page<Booking> requestPage = bookingJpaRepository.findAll(page);
+            rawBookings = requestPage.getContent()
+                    .stream()
+                    .filter(x -> itemJpaRepository.findById(x.getItem().getId()).get().getOwner().getId().equals(owner))
+                    .sorted(Comparator.comparing(Booking::getStart)
+                            .reversed())
+                    .collect(Collectors.toList());
+        }
         switch (state) {
             case "ALL":
                 bookings = rawBookings;
@@ -192,6 +248,8 @@ public class BookingServiceImpl implements BookingService {
             default:
                 throw new IncorrectBookingStatusException("Unknown state: UNSUPPORTED_STATUS");
         }
-        return bookings;
+        return bookings.stream()
+                .map(x -> toBookingDto(x))
+                .collect(Collectors.toList());
     }
 }

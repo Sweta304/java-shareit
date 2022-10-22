@@ -1,6 +1,9 @@
 package ru.practicum.shareit.item.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookStatus;
 import ru.practicum.shareit.booking.IncorrectBookingException;
@@ -16,44 +19,59 @@ import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentJpaRepository;
 import ru.practicum.shareit.item.repository.ItemJpaRepository;
+import ru.practicum.shareit.requests.RequestNotFoundException;
+import ru.practicum.shareit.requests.model.ItemRequest;
+import ru.practicum.shareit.requests.repository.ItemRequestJpaRepository;
 import ru.practicum.shareit.user.IncorrectOwnerException;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.ValidationException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserJpaRepository;
+import ru.practicum.shareit.utils.MyPageable;
+import ru.practicum.shareit.utils.PaginationNotCorrectException;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.booking.BookingMapper.toBookerDto;
 import static ru.practicum.shareit.item.CommentMapper.toCommentDto;
 import static ru.practicum.shareit.item.ItemMapper.*;
+import static ru.practicum.shareit.utils.PaginationValidation.validatePagination;
 
 @Service
 public class ItemServiceImpl implements ItemService {
 
-    private ItemJpaRepository itemRepository;
-    private UserJpaRepository userRepository;
-    private BookingJpaRepository bookingJpaRepository;
-    private CommentJpaRepository commentJpaRepository;
+    private final ItemJpaRepository itemRepository;
+    private final UserJpaRepository userRepository;
+    private final BookingJpaRepository bookingJpaRepository;
+    private final CommentJpaRepository commentJpaRepository;
+    private final ItemRequestJpaRepository itemRequestJpaRepository;
 
     @Autowired
     public ItemServiceImpl(ItemJpaRepository itemRepository, UserJpaRepository userRepository,
-                           BookingJpaRepository bookingJpaRepository, CommentJpaRepository commentJpaRepository) {
+                           BookingJpaRepository bookingJpaRepository, CommentJpaRepository commentJpaRepository, ItemRequestJpaRepository itemRequestJpaRepository) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.bookingJpaRepository = bookingJpaRepository;
         this.commentJpaRepository = commentJpaRepository;
+        this.itemRequestJpaRepository = itemRequestJpaRepository;
     }
 
     @Override
-    public ItemDto addItem(ItemDto itemDto, Long owner) throws UserNotFoundException, ValidationException {
+    public ItemDto addItem(ItemDto itemDto, Long owner) throws UserNotFoundException, ValidationException, RequestNotFoundException {
         User user = userRepository.findById(owner).orElseThrow(() -> new UserNotFoundException("Пользователя не существует с id" + owner + "не существует"));
         if (!ItemDto.validateItem(itemDto)) {
             throw new ValidationException("параметры вещи заданы некорректно");
         }
-        Item item = fromItemDto(itemDto, user);
+        ItemRequest itemRequest = null;
+        if (itemDto.getRequestId() != null) {
+            itemRequest = itemRequestJpaRepository.findById(itemDto.getRequestId()).orElseThrow(() -> new RequestNotFoundException("Запроса не существует"));
+        }
+        Item item = fromItemDto(itemDto, user, itemRequest);
         return toItemDto(itemRepository.save(item));
     }
 
@@ -88,8 +106,18 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemWithBooking> getItems(Long owner) throws UserNotFoundException {
+    public List<ItemWithBooking> getItems(Long owner, Integer from, Integer size) throws UserNotFoundException, PaginationNotCorrectException {
         User user = userRepository.findById(owner).orElseThrow(() -> new UserNotFoundException("Пользователя не существует с id " + owner + " не существует"));
+        if (from != null && size != null && validatePagination(from, size)) {
+            Sort sortByCreated = Sort.by(Sort.Direction.DESC, "id");
+            Pageable page = new MyPageable(from, size, sortByCreated);
+            Page<Item> requestPage = itemRepository.findAllByOwner(user, page);
+            return requestPage.getContent()
+                    .stream()
+                    .map(x -> toItemWithBooking(x, findLastBookingForItem(x.getId()), findNextBookingForItem(x.getId()), getCommentsList(commentJpaRepository.findCommentsByItemId(x.getId()))))
+                    .sorted(Comparator.comparing(ItemWithBooking::getId))
+                    .collect(Collectors.toList());
+        }
         return itemRepository.findAllByOwner(user)
                 .stream()
                 .map(x -> toItemWithBooking(x, findLastBookingForItem(x.getId()), findNextBookingForItem(x.getId()), getCommentsList(commentJpaRepository.findCommentsByItemId(x.getId()))))
@@ -98,11 +126,23 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItem(String text) {
+    public List<ItemDto> searchItem(String text, Integer from, Integer size) throws PaginationNotCorrectException {
         if (text.isEmpty() || text.isBlank()) {
             return new ArrayList<>();
         }
         String lowerText = text.toLowerCase();
+        if (from != null && size != null && validatePagination(from, size)) {
+            Sort sortByCreated = Sort.by(Sort.Direction.DESC, "id");
+            Pageable page = new MyPageable(from, size, sortByCreated);
+            Page<Item> requestPage = itemRepository.findAll(page);
+            return requestPage.getContent()
+                    .stream()
+                    .filter((x -> (x.getName().toLowerCase(new Locale("RU")).contains(lowerText))
+                            || (x.getDescription().toLowerCase(new Locale("RU")).contains(lowerText))))
+                    .filter(x -> x.getAvailable())
+                    .map(x -> toItemDto(x))
+                    .collect(Collectors.toList());
+        }
         return itemRepository.findAll()
                 .stream()
                 .filter((x -> (x.getName().toLowerCase(new Locale("RU")).contains(lowerText))

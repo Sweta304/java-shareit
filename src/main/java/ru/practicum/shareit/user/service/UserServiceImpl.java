@@ -12,11 +12,11 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserJpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.user.UserMapper.fromUserDto;
 import static ru.practicum.shareit.user.UserMapper.toUserDto;
+import static ru.practicum.shareit.user.dto.UserDto.validateMail;
 
 @Service
 @Slf4j
@@ -29,26 +29,23 @@ public class UserServiceImpl implements UserService {
         this.userRepository = userRepository;
     }
 
-    public UserDto addUser(UserDto userDto) throws UserAlreadyExistsException, ValidationException, EmailException {
+    public UserDto addUser(UserDto userDto) throws ValidationException, EmailException {
         User user = fromUserDto(userDto);
         if (!UserDto.validate(userDto)) {
             log.error("валидация пользователя не пройдена");
             throw new ValidationException("данные о пользователе указаны некорректно");
-        } else if (UserDto.validateMail(userDto)) {
+        } else if (validateMail(userDto)) {
             throw new EmailException("некорректный Email");
         }
         return toUserDto(userRepository.save(user));
     }
 
     public UserDto updateUser(UserDto userDto, Long id) throws UserNotFoundException, EmailException, UserAlreadyExistsException {
-        Optional<User> userOptional = userRepository.findById(id);
-        if (userOptional.isEmpty()) {
-            throw new UserNotFoundException("такого пользователя не существует");
-        }
-        User user = userOptional.get();
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("такого пользователя не существует"));
         if (userDto.getEmail() != null &&
                 (userDto.getEmail().isEmpty()
-                        || userDto.getEmail().isBlank())) {
+                        || userDto.getEmail().isBlank()
+                        || validateMail(userDto))) {
             throw new EmailException("некорректный Email");
         } else if (userDto.getEmail() != null
                 && userRepository.findByEmail(userDto.getEmail()) != null) {
@@ -70,19 +67,12 @@ public class UserServiceImpl implements UserService {
     }
 
     public UserDto getUserById(Long id) throws UserNotFoundException {
-        if (!userRepository.findById(id).isPresent()) {
-            throw new UserNotFoundException("пользователь с id " + id + " не существует");
-        }
-        User user = userRepository.findById(id).get();
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("пользователь с id " + id + " не существует"));
         return toUserDto(user);
     }
 
     public UserDto deleteUser(Long id) throws UserNotFoundException {
-        Optional<User> userOptional = userRepository.findById(id);
-        if (userOptional.isEmpty()) {
-            throw new UserNotFoundException("пользователь с id " + id + " не существует");
-        }
-        User user = userOptional.get();
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("пользователь с id " + id + " не существует"));
         userRepository.delete(user);
         return toUserDto(user);
     }
