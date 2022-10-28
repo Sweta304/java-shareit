@@ -27,26 +27,26 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @DataJpaTest
 public class BookingRepositoryTest {
     @Autowired
-    BookingJpaRepository bookingJpaRepository;
+    private BookingJpaRepository bookingJpaRepository;
 
     @Autowired
-    UserJpaRepository userJpaRepository;
+    private UserJpaRepository userJpaRepository;
 
     @Autowired
-    ItemJpaRepository itemJpaRepository;
+    private ItemJpaRepository itemJpaRepository;
 
     @Autowired
-    ItemRequestJpaRepository itemRequestJpaRepository;
+    private ItemRequestJpaRepository itemRequestJpaRepository;
 
-    Booking booking1;
-    Booking booking2;
-    Booking booking3;
-    Booking booking4;
-    User user1;
-    User user2;
-    Item item1;
-    Item item2;
-    ItemRequest request;
+    private Booking booking1;
+    private Booking booking2;
+    private Booking booking3;
+    private Booking booking4;
+    private User user1;
+    private User user2;
+    private Item item1;
+    private Item item2;
+    private ItemRequest request;
     private MyPageable page;
     private Sort sort;
 
@@ -87,42 +87,42 @@ public class BookingRepositoryTest {
 
     @Test
     void findByBookerIdAndStartIsAfter() {
-        List<Booking> bookings = bookingJpaRepository.findByBookerIdAndStartIsAfter(user1.getId());
+        List<Booking> bookings = bookingJpaRepository.findByBookerIdAndStartIsAfter(user1.getId(), LocalDateTime.now());
         assertNotNull(bookings);
         assertEquals(1, bookings.size());
     }
 
     @Test
     void findByBookerIdAndStartIsAfterPage() {
-        Page<Booking> bookings = bookingJpaRepository.findByBookerIdAndStartIsAfter(user1.getId(), page);
+        Page<Booking> bookings = bookingJpaRepository.findByBookerIdAndStartIsAfter(user1.getId(), LocalDateTime.now(), page);
         assertNotNull(bookings);
         assertEquals(1, bookings.getTotalElements());
     }
 
     @Test
     void findByBookerIdAndEndIsBefore() {
-        List<Booking> bookings = bookingJpaRepository.findByBookerIdAndEndIsBefore(user2.getId());
+        List<Booking> bookings = bookingJpaRepository.findByBookerIdAndEndIsBefore(user2.getId(), LocalDateTime.now());
         assertNotNull(bookings);
         assertEquals(2, bookings.size());
     }
 
     @Test
     void findByBookerIdAndEndIsBeforePage() {
-        Page<Booking> bookings = bookingJpaRepository.findByBookerIdAndEndIsBefore(user2.getId(), page);
+        Page<Booking> bookings = bookingJpaRepository.findByBookerIdAndEndIsBefore(user2.getId(), LocalDateTime.now(), page);
         assertNotNull(bookings);
         assertEquals(2, bookings.getTotalElements());
     }
 
     @Test
     void findByBookerIdAndCurrentState() {
-        List<Booking> bookings = bookingJpaRepository.findByBookerIdAndCurrentState(user2.getId());
+        List<Booking> bookings = bookingJpaRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(user2.getId(), LocalDateTime.now(), LocalDateTime.now());
         assertNotNull(bookings);
         assertEquals(1, bookings.size());
     }
 
     @Test
     void findByBookerIdAndCurrentStatePage() {
-        Page<Booking> bookings = bookingJpaRepository.findByBookerIdAndCurrentState(user2.getId(), page);
+        Page<Booking> bookings = bookingJpaRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(user2.getId(), LocalDateTime.now(), LocalDateTime.now(), page);
         assertNotNull(bookings);
         assertEquals(1, bookings.getTotalElements());
     }

@@ -131,8 +131,8 @@ public class ItemServiceImpl implements ItemService {
             return new ArrayList<>();
         }
         String lowerText = text.toLowerCase();
-        if (from != null && size != null && validatePagination(from, size)) {
-            Sort sortByCreated = Sort.by(Sort.Direction.DESC, "id");
+        if (validatePagination(from, size)) {
+            Sort sortByCreated = Sort.by(Sort.Direction.ASC, "id");
             Pageable page = new MyPageable(from, size, sortByCreated);
             Page<Item> requestPage = itemRepository.findAll(page);
             return requestPage.getContent()
@@ -142,14 +142,9 @@ public class ItemServiceImpl implements ItemService {
                     .filter(x -> x.getAvailable())
                     .map(x -> toItemDto(x))
                     .collect(Collectors.toList());
+        } else {
+            throw new PaginationNotCorrectException("Некорректно заданы параметры постраничного вывода");
         }
-        return itemRepository.findAll()
-                .stream()
-                .filter((x -> (x.getName().toLowerCase(new Locale("RU")).contains(lowerText))
-                        || (x.getDescription().toLowerCase(new Locale("RU")).contains(lowerText))))
-                .filter(x -> x.getAvailable())
-                .map(x -> toItemDto(x))
-                .collect(Collectors.toList());
     }
 
     @Override

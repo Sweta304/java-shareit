@@ -257,7 +257,7 @@ public class ItemServiceTest {
 
     @Test
     void getItemsPagination() throws Exception {
-        Sort sortByCreated = Sort.by(Sort.Direction.DESC, "id");
+        Sort sortByCreated = Sort.by(Sort.Direction.DESC, "start");
         Pageable pageable = new MyPageable(0, 1, sortByCreated);
         Page<Item> itemsPage = new PageImpl<>(List.of(item));
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));

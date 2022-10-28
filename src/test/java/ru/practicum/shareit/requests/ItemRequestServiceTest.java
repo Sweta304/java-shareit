@@ -88,26 +88,26 @@ public class ItemRequestServiceTest {
         user.setId(1L);
         owner.setId(2L);
         item.setOwner(owner);
-        itemRequest.setDescription("description");
+        itemRequestDto.setDescription("description");
     }
 
     @Test
     void addItemRequestUserNotFound() {
-        assertThrows(UserNotFoundException.class, () -> itemRequestService.addItemRequest(itemRequest, 1L));
+        assertThrows(UserNotFoundException.class, () -> itemRequestService.addItemRequest(itemRequestDto, 1L));
     }
 
     @Test
     void addItemRequestNotCorrect() {
-        itemRequest.setDescription("");
+        itemRequestDto.setDescription("");
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        assertThrows(RequestNotCorrectException.class, () -> itemRequestService.addItemRequest(itemRequest, 1L));
+        assertThrows(RequestNotCorrectException.class, () -> itemRequestService.addItemRequest(itemRequestDto, 1L));
     }
 
     @Test
     void addItemRequest() throws Exception {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(itemRequestJpaRepository.save(any())).thenReturn(itemRequest);
-        ItemRequestDto itemReqDto = itemRequestService.addItemRequest(itemRequest, 1L);
+        ItemRequestDto itemReqDto = itemRequestService.addItemRequest(itemRequestDto, 1L);
         assertEquals(itemRequestDto.getId(), itemReqDto.getId());
         assertEquals(itemRequestDto.getRequestorId(), itemReqDto.getRequestorId());
         assertEquals(itemRequestDto.getDescription(), itemReqDto.getDescription());

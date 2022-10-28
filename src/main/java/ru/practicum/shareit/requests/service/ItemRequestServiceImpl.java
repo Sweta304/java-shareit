@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ru.practicum.shareit.requests.ItemRequestMapper.fromItemRequestDto;
 import static ru.practicum.shareit.requests.ItemRequestMapper.toItemRequestDto;
 import static ru.practicum.shareit.utils.PaginationValidation.validatePagination;
 
@@ -39,11 +40,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public ItemRequestDto addItemRequest(ItemRequest itemRequest, Long requestor) throws UserNotFoundException, RequestNotCorrectException {
+    public ItemRequestDto addItemRequest(ItemRequestDto itemRequestDto, Long requestor) throws UserNotFoundException, RequestNotCorrectException {
         User user = userJpaRepository.findById(requestor).orElseThrow(() -> new UserNotFoundException("Пользователя не существует"));
-
-        if (itemRequest.getDescription() == null
-                || itemRequest.getDescription().isBlank()
+        ItemRequest itemRequest = fromItemRequestDto(itemRequestDto);
+        if (itemRequest.getDescription().isBlank()
                 || itemRequest.getDescription().isEmpty()) {
             throw new RequestNotCorrectException("Проверьте корректность описания запроса");
         }
@@ -68,7 +68,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         User user = userJpaRepository.findById(requestor).orElseThrow(() -> new UserNotFoundException("Пользователя не существует"));
         List<ItemRequestDto> requests;
 
-        if (from != null && size != null && !validatePagination(from, size)) {
+        if (!validatePagination(from, size)) {
             throw new PaginationNotCorrectException("Неверно заданы параметры вывода страниц");
         }
         Sort sortByCreated = Sort.by(Sort.Direction.DESC, "created");

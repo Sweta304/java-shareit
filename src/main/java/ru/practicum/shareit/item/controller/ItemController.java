@@ -46,12 +46,12 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemWithBooking> getItems(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam(required = false) Integer from, @RequestParam(required = false) Integer size) throws UserNotFoundException, PaginationNotCorrectException {
+    public List<ItemWithBooking> getItems(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam(required = false, defaultValue = "0") Integer from, @RequestParam(required = false, defaultValue = "20") Integer size) throws UserNotFoundException, PaginationNotCorrectException {
         return itemService.getItems(owner, from, size);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItem(@RequestParam String text, @RequestParam(required = false) Integer from, @RequestParam(required = false) Integer size) throws PaginationNotCorrectException {
+    public List<ItemDto> searchItem(@RequestParam String text, @RequestParam(required = false, defaultValue = "0") Integer from, @RequestParam(required = false, defaultValue = "20") Integer size) throws PaginationNotCorrectException {
         return itemService.searchItem(text, from, size);
     }
 

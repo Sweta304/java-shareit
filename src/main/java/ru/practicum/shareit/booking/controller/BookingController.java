@@ -43,12 +43,12 @@ public class BookingController {
     }
 
     @GetMapping
-    public List<BookingDto> getAllBookings(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam(required = false, defaultValue = "ALL") String state, @RequestParam(required = false) Integer from, @RequestParam(required = false) Integer size) throws UserNotFoundException, IncorrectBookingStatusException, PaginationNotCorrectException {
+    public List<BookingDto> getAllBookings(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam(required = false, defaultValue = "ALL") String state, @RequestParam(required = false, defaultValue = "0") Integer from, @RequestParam(required = false, defaultValue = "20") Integer size) throws UserNotFoundException, IncorrectBookingStatusException, PaginationNotCorrectException {
         return bookingService.getAllBookings(owner, state, from, size);
     }
 
     @GetMapping("/owner")
-    public List<BookingDto> getAllBookingsByOwnerItems(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam(required = false, defaultValue = "ALL") String state, @RequestParam(required = false) Integer from, @RequestParam(required = false) Integer size) throws UserNotFoundException, IncorrectBookingStatusException, PaginationNotCorrectException {
+    public List<BookingDto> getAllBookingsByOwnerItems(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam(required = false, defaultValue = "ALL") String state, @RequestParam(required = false, defaultValue = "0") Integer from, @RequestParam(required = false, defaultValue = "20") Integer size) throws UserNotFoundException, IncorrectBookingStatusException, PaginationNotCorrectException {
         return bookingService.getAllBookingsByOwnerItems(owner, state, from, size);
     }
 }

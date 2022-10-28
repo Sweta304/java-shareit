@@ -26,17 +26,19 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static ru.practicum.shareit.item.ItemMapper.toItemDto;
+import static ru.practicum.shareit.user.UserMapper.toUserDto;
 
 @WebMvcTest(BookingController.class)
 @AutoConfigureMockMvc
 public class BookingControllerTest {
     @MockBean
-    BookingService bookingService;
+    private BookingService bookingService;
 
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
     @Autowired
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
 
     private BookingIncomingDto bookingIncomingDto;
     private BookingDto bookingDto;
@@ -61,14 +63,14 @@ public class BookingControllerTest {
         bookingDto = new BookingDto(1L,
                 LocalDateTime.of(2022, 11, 15, 10, 15),
                 LocalDateTime.of(2022, 12, 15, 10, 15),
-                item,
-                user,
+                toItemDto(item),
+                toUserDto(user),
                 bookStatus);
         bookingSecondDto = new BookingDto(2L,
                 LocalDateTime.of(2022, 11, 15, 10, 15),
                 LocalDateTime.of(2022, 12, 15, 10, 15),
-                item,
-                user,
+                toItemDto(item),
+                toUserDto(user),
                 bookStatus);
     }
 

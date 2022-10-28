@@ -19,4 +19,10 @@ public class ItemRequestMapper {
                 itemRequest.getCreated(),
                 itemDtos);
     }
+
+    public static ItemRequest fromItemRequestDto(ItemRequestDto itemRequestDto) {
+        ItemRequest itemRequest = new ItemRequest();
+        itemRequest.setDescription(itemRequestDto.getDescription());
+        return itemRequest;
+    }
 }

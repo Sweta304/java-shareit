@@ -4,10 +4,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import ru.practicum.shareit.booking.BookStatus;
 import ru.practicum.shareit.booking.model.Booking;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingJpaRepository extends JpaRepository<Booking, Long> {
@@ -19,49 +19,17 @@ public interface BookingJpaRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByItemId(Long itemId);
 
-    @Query(value = "select * from booking " +
-            "where booking_start >= CURRENT_TIMESTAMP " +
-            "and booker_id = :bookerId " +
-            "order by booking_start desc",
-            nativeQuery = true)
-    List<Booking> findByBookerIdAndStartIsAfter(Long bookerId);
+    List<Booking> findByBookerIdAndStartIsAfter(Long bookerId, LocalDateTime start);
 
-    @Query(value = "select * from booking " +
-            "where booking_start >= CURRENT_TIMESTAMP " +
-            "and booker_id = :bookerId " +
-            "order by booking_start desc",
-            nativeQuery = true)
-    Page<Booking> findByBookerIdAndStartIsAfter(Long bookerId, Pageable pageable);
+    Page<Booking> findByBookerIdAndStartIsAfter(Long bookerId, LocalDateTime start, Pageable pageable);
 
-    @Query(value = "select * from booking " +
-            "where booking_end <= CURRENT_TIMESTAMP " +
-            "and booker_id = :bookerId " +
-            "order by booking_start desc",
-            nativeQuery = true)
-    List<Booking> findByBookerIdAndEndIsBefore(Long bookerId);
+    List<Booking> findByBookerIdAndEndIsBefore(Long bookerId, LocalDateTime end);
 
-    @Query(value = "select * from booking " +
-            "where booking_end <= CURRENT_TIMESTAMP " +
-            "and booker_id = :bookerId " +
-            "order by booking_start desc",
-            nativeQuery = true)
-    Page<Booking> findByBookerIdAndEndIsBefore(Long bookerId, Pageable pageable);
+    Page<Booking> findByBookerIdAndEndIsBefore(Long bookerId, LocalDateTime end, Pageable pageable);
 
-    @Query(value = "select * from booking " +
-            "where booking_end >= CURRENT_TIMESTAMP " +
-            "and booking_start <= CURRENT_TIMESTAMP " +
-            "and booker_id = :bookerId " +
-            "order by booking_start desc",
-            nativeQuery = true)
-    List<Booking> findByBookerIdAndCurrentState(Long bookerId);
+    List<Booking> findByBookerIdAndStartIsBeforeAndEndIsAfter(Long bookerId, LocalDateTime start, LocalDateTime end);
 
-    @Query(value = "select * from booking " +
-            "where booking_end >= CURRENT_TIMESTAMP " +
-            "and booking_start <= CURRENT_TIMESTAMP " +
-            "and booker_id = :bookerId " +
-            "order by booking_start desc",
-            nativeQuery = true)
-    Page<Booking> findByBookerIdAndCurrentState(Long bookerId, Pageable pageable);
+    Page<Booking> findByBookerIdAndStartIsBeforeAndEndIsAfter(Long bookerId, LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     List<Booking> findByBookerIdAndStatus(Long bookerId, BookStatus status, Sort sort);
 

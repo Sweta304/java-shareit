@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.RequestNotCorrectException;
 import ru.practicum.shareit.requests.RequestNotFoundException;
 import ru.practicum.shareit.requests.dto.ItemRequestDto;
-import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.requests.service.ItemRequestService;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.utils.PaginationNotCorrectException;
@@ -24,7 +23,7 @@ public class ItemRequestController {
     }
 
     @PostMapping
-    public ItemRequestDto addItemRequest(@RequestBody @Valid ItemRequest itemRequest, @RequestHeader("X-Sharer-User-Id") Long requestor) throws UserNotFoundException, RequestNotCorrectException {
+    public ItemRequestDto addItemRequest(@RequestBody @Valid ItemRequestDto itemRequest, @RequestHeader("X-Sharer-User-Id") Long requestor) throws UserNotFoundException, RequestNotCorrectException {
         return itemRequestService.addItemRequest(itemRequest, requestor);
     }
 

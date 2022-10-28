@@ -301,7 +301,7 @@ public class BookingServiceTest {
     void getFutureBookingsPagination() throws Exception {
         Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
         when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndStartIsAfter(1L, page)).thenReturn(requestPage);
+        when(bookingRepository.findByBookerIdAndStartIsAfter(1L, LocalDateTime.now(), page)).thenReturn(requestPage);
 
         List<BookingDto> bookings = bookingService.getAllBookings(1L, "FUTURE", 0, 2);
 
@@ -312,7 +312,7 @@ public class BookingServiceTest {
     @Test
     void getFutureBookingsWithoutPagination() throws Exception {
         when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndStartIsAfter(1L)).thenReturn(List.of(booking, secondBooking));
+        when(bookingRepository.findByBookerIdAndStartIsAfter(1L, LocalDateTime.now())).thenReturn(List.of(booking, secondBooking));
 
         List<BookingDto> bookings = bookingService.getAllBookings(1L, "FUTURE", null, null);
 
@@ -324,7 +324,7 @@ public class BookingServiceTest {
     void getPastBookingsPagination() throws Exception {
         Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
         when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndEndIsBefore(1L, page)).thenReturn(requestPage);
+        when(bookingRepository.findByBookerIdAndEndIsBefore(1L, LocalDateTime.now(), page)).thenReturn(requestPage);
 
         List<BookingDto> bookings = bookingService.getAllBookings(1L, "PAST", 0, 2);
 
@@ -335,7 +335,7 @@ public class BookingServiceTest {
     @Test
     void getPastBookingsWithoutPagination() throws Exception {
         when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndEndIsBefore(1L)).thenReturn(List.of(booking, secondBooking));
+        when(bookingRepository.findByBookerIdAndEndIsBefore(1L, LocalDateTime.now())).thenReturn(List.of(booking, secondBooking));
 
         List<BookingDto> bookings = bookingService.getAllBookings(1L, "PAST", null, null);
 
@@ -347,7 +347,7 @@ public class BookingServiceTest {
     void getCurrentBookingsPagination() throws Exception {
         Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
         when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndCurrentState(1L, page)).thenReturn(requestPage);
+        when(bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(1L, LocalDateTime.now(), LocalDateTime.now(), page)).thenReturn(requestPage);
 
         List<BookingDto> bookings = bookingService.getAllBookings(1L, "CURRENT", 0, 2);
 
@@ -358,7 +358,7 @@ public class BookingServiceTest {
     @Test
     void getCurrentBookingsWithoutPagination() throws Exception {
         when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndCurrentState(1L)).thenReturn(List.of(booking, secondBooking));
+        when(bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(1L, LocalDateTime.now(), LocalDateTime.now())).thenReturn(List.of(booking, secondBooking));
 
         List<BookingDto> bookings = bookingService.getAllBookings(1L, "CURRENT", null, null);
 

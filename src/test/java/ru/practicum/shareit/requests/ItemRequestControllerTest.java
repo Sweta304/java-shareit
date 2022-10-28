@@ -35,11 +35,11 @@ import static ru.practicum.shareit.requests.ItemRequestMapper.toItemRequestDto;
 @AutoConfigureMockMvc
 public class ItemRequestControllerTest {
     @MockBean
-    ItemRequestService itemRequestService;
+    private ItemRequestService itemRequestService;
     @Autowired
-    MockMvc mockMvc;
+    private MockMvc mockMvc;
     @Autowired
-    ObjectMapper mapper;
+    private ObjectMapper mapper;
 
     private ItemRequestDto itemRequestDto;
     private ItemRequest itemRequest;
@@ -63,7 +63,7 @@ public class ItemRequestControllerTest {
 
     @Test
     void addItemRequest() throws Exception {
-        when(itemRequestService.addItemRequest(itemRequest, 1L)).thenReturn(itemRequestDto);
+        when(itemRequestService.addItemRequest(itemRequestDto, 1L)).thenReturn(itemRequestDto);
 
         mockMvc.perform(post("/requests")
                         .content(mapper.writeValueAsString(itemRequest))
