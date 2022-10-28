@@ -13,6 +13,7 @@ import ru.practicum.shareit.booking.controller.BookingController;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingIncomingDto;
 import ru.practicum.shareit.booking.service.BookingService;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
@@ -89,15 +90,14 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.id", is(bookingDto.getId()), Long.class))
                 .andExpect(jsonPath("$.start", is(bookingDto.getStart().format(format)), String.class))
                 .andExpect(jsonPath("$.end", is(bookingDto.getEnd().format(format)), String.class))
-                .andExpect(jsonPath("$.item", is(bookingDto.getItem()), Item.class))
-                .andExpect(jsonPath("$.booker", is(bookingDto.getBooker()), User.class))
+                .andExpect(jsonPath("$.item", is(bookingDto.getItem()), ItemDto.class))
                 .andExpect(jsonPath("$.status", is(bookingDto.getStatus().toString()), String.class));
     }
 
     @Test
     void setBookingStatus() throws Exception {
 
-        when(bookingService.setBookingStatus(1L, true, 1L))
+        when(bookingService.setBookingStatus(any(), any(), any()))
                 .thenReturn(bookingDto);
 
         mockMvc.perform(patch("/bookings/1?approved=true")
@@ -109,8 +109,8 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.id", is(bookingDto.getId()), Long.class))
                 .andExpect(jsonPath("$.start", is(bookingDto.getStart().format(format)), String.class))
                 .andExpect(jsonPath("$.end", is(bookingDto.getEnd().format(format)), String.class))
-                .andExpect(jsonPath("$.item", is(bookingDto.getItem()), Item.class))
-                .andExpect(jsonPath("$.booker", is(bookingDto.getBooker()), User.class))
+                .andExpect(jsonPath("$.item", is(bookingDto.getItem()), ItemDto.class))
+                .andExpect(jsonPath("$.booker", is(user), User.class))
                 .andExpect(jsonPath("$.status", is(bookingDto.getStatus().toString()), String.class));
 
 
@@ -131,10 +131,8 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.id", is(bookingDto.getId()), Long.class))
                 .andExpect(jsonPath("$.start", is(bookingDto.getStart().format(format)), String.class))
                 .andExpect(jsonPath("$.end", is(bookingDto.getEnd().format(format)), String.class))
-                .andExpect(jsonPath("$.item", is(bookingDto.getItem()), Item.class))
-                .andExpect(jsonPath("$.booker", is(bookingDto.getBooker()), User.class))
+                .andExpect(jsonPath("$.item", is(bookingDto.getItem()), ItemDto.class))
                 .andExpect(jsonPath("$.status", is(bookingDto.getStatus().toString()), String.class));
-        ;
 
         verify(bookingService, times(1)).getBookingById(1L, 1L);
     }

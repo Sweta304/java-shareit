@@ -257,7 +257,7 @@ public class ItemServiceTest {
 
     @Test
     void getItemsPagination() throws Exception {
-        Sort sortByCreated = Sort.by(Sort.Direction.DESC, "start");
+        Sort sortByCreated = Sort.by(Sort.Direction.DESC, "id");
         Pageable pageable = new MyPageable(0, 1, sortByCreated);
         Page<Item> itemsPage = new PageImpl<>(List.of(item));
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
@@ -293,19 +293,11 @@ public class ItemServiceTest {
 
     @Test
     void searchItemPagination() throws Exception {
-        Sort sortById = Sort.by(Sort.Direction.DESC, "id");
+        Sort sortById = Sort.by(Sort.Direction.ASC, "id");
         Pageable pageable = new MyPageable(0, 1, sortById);
         Page<Item> itemsPage = new PageImpl<>(List.of(item));
         when(itemRepository.findAll(pageable)).thenReturn(itemsPage);
         List<ItemDto> items = itemService.searchItem("description", 0, 1);
-        assertEquals(toItemDto(item), items.get(0));
-        assertEquals(1, items.size());
-    }
-
-    @Test
-    void searchItemWithoutPagination() throws Exception {
-        when(itemRepository.findAll()).thenReturn(List.of(item));
-        List<ItemDto> items = itemService.searchItem("description", null, null);
         assertEquals(toItemDto(item), items.get(0));
         assertEquals(1, items.size());
     }

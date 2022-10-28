@@ -13,8 +13,6 @@ import java.util.List;
 public interface BookingJpaRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByBookerIdAndItemIdAndStatus(Long bookerId, Long itemId, BookStatus status);
 
-    List<Booking> findByBookerId(Long bookerId, Sort sort);
-
     Page<Booking> findByBookerId(Long bookerId, Pageable pageable);
 
     List<Booking> findByItemId(Long itemId);

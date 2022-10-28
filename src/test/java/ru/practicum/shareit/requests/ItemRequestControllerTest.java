@@ -66,7 +66,7 @@ public class ItemRequestControllerTest {
         when(itemRequestService.addItemRequest(itemRequestDto, 1L)).thenReturn(itemRequestDto);
 
         mockMvc.perform(post("/requests")
-                        .content(mapper.writeValueAsString(itemRequest))
+                        .content(mapper.writeValueAsString(itemRequestDto))
                         .header("X-Sharer-User-Id", 1L)
                         .characterEncoding(StandardCharsets.UTF_8)
                         .contentType(MediaType.APPLICATION_JSON)

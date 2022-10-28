@@ -287,34 +287,12 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsWithoutPagination() throws Exception {
-        when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerId(1L, sort)).thenReturn(List.of(booking, secondBooking));
-
-        List<BookingDto> bookings = bookingService.getAllBookings(1L, "ALL", null, null);
-
-        assertEquals(bookings.size(), 2);
-        assertEquals(bookings.get(0).getId(), booking.getId());
-    }
-
-    @Test
     void getFutureBookingsPagination() throws Exception {
         Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
         when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndStartIsAfter(1L, LocalDateTime.now(), page)).thenReturn(requestPage);
+        when(bookingRepository.findByBookerIdAndStartIsAfter(any(), any(), any())).thenReturn(requestPage);
 
         List<BookingDto> bookings = bookingService.getAllBookings(1L, "FUTURE", 0, 2);
-
-        assertEquals(bookings.size(), 2);
-        assertEquals(bookings.get(0).getId(), booking.getId());
-    }
-
-    @Test
-    void getFutureBookingsWithoutPagination() throws Exception {
-        when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndStartIsAfter(1L, LocalDateTime.now())).thenReturn(List.of(booking, secondBooking));
-
-        List<BookingDto> bookings = bookingService.getAllBookings(1L, "FUTURE", null, null);
 
         assertEquals(bookings.size(), 2);
         assertEquals(bookings.get(0).getId(), booking.getId());
@@ -324,20 +302,9 @@ public class BookingServiceTest {
     void getPastBookingsPagination() throws Exception {
         Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
         when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndEndIsBefore(1L, LocalDateTime.now(), page)).thenReturn(requestPage);
+        when(bookingRepository.findByBookerIdAndEndIsBefore(any(), any(), any())).thenReturn(requestPage);
 
         List<BookingDto> bookings = bookingService.getAllBookings(1L, "PAST", 0, 2);
-
-        assertEquals(bookings.size(), 2);
-        assertEquals(bookings.get(0).getId(), booking.getId());
-    }
-
-    @Test
-    void getPastBookingsWithoutPagination() throws Exception {
-        when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndEndIsBefore(1L, LocalDateTime.now())).thenReturn(List.of(booking, secondBooking));
-
-        List<BookingDto> bookings = bookingService.getAllBookings(1L, "PAST", null, null);
 
         assertEquals(bookings.size(), 2);
         assertEquals(bookings.get(0).getId(), booking.getId());
@@ -347,20 +314,9 @@ public class BookingServiceTest {
     void getCurrentBookingsPagination() throws Exception {
         Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
         when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(1L, LocalDateTime.now(), LocalDateTime.now(), page)).thenReturn(requestPage);
+        when(bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(any(), any(), any(), any())).thenReturn(requestPage);
 
         List<BookingDto> bookings = bookingService.getAllBookings(1L, "CURRENT", 0, 2);
-
-        assertEquals(bookings.size(), 2);
-        assertEquals(bookings.get(0).getId(), booking.getId());
-    }
-
-    @Test
-    void getCurrentBookingsWithoutPagination() throws Exception {
-        when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndStartIsBeforeAndEndIsAfter(1L, LocalDateTime.now(), LocalDateTime.now())).thenReturn(List.of(booking, secondBooking));
-
-        List<BookingDto> bookings = bookingService.getAllBookings(1L, "CURRENT", null, null);
 
         assertEquals(bookings.size(), 2);
         assertEquals(bookings.get(0).getId(), booking.getId());
@@ -379,17 +335,6 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getWaitingBookingsWithoutPagination() throws Exception {
-        when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndStatus(1L, BookStatus.WAITING, sort)).thenReturn(List.of(booking, secondBooking));
-
-        List<BookingDto> bookings = bookingService.getAllBookings(1L, "WAITING", null, null);
-
-        assertEquals(bookings.size(), 2);
-        assertEquals(bookings.get(0).getId(), booking.getId());
-    }
-
-    @Test
     void getRejectedBookingsPagination() throws Exception {
         Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
         when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -402,22 +347,11 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getRejectedBookingsWithoutPagination() throws Exception {
-        when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(bookingRepository.findByBookerIdAndStatus(1L, BookStatus.REJECTED, sort)).thenReturn(List.of(booking, secondBooking));
-
-        List<BookingDto> bookings = bookingService.getAllBookings(1L, "REJECTED", null, null);
-
-        assertEquals(bookings.size(), 2);
-        assertEquals(bookings.get(0).getId(), booking.getId());
-    }
-
-    @Test
     void getBookingsUnsupportedStatus() {
         when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
         when(bookingRepository.findByBookerIdAndStatus(1L, BookStatus.CANCELED, sort)).thenReturn(List.of(booking, secondBooking));
 
-        assertThrows(IncorrectBookingStatusException.class, () -> bookingService.getAllBookings(1L, "CANCELED", null, null));
+        assertThrows(IncorrectBookingStatusException.class, () -> bookingService.getAllBookings(1L, "CANCELED", 0, 2));
     }
 
     @Test
@@ -459,10 +393,11 @@ public class BookingServiceTest {
 
     @Test
     void getAllBookingsByOwnerAll() throws Exception {
-        when(bookingRepository.findAll()).thenReturn(List.of(booking, secondBooking));
+        Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
+        when(bookingRepository.findAll(page)).thenReturn(requestPage);
         when(itemJpaRepository.findById(1L)).thenReturn(Optional.of(item));
         when(userJpaRepository.findById(2L)).thenReturn(Optional.of(user));
-        List<BookingDto> bookings = bookingService.getAllBookingsByOwnerItems(2L, "ALL", null, null);
+        List<BookingDto> bookings = bookingService.getAllBookingsByOwnerItems(2L, "ALL", 0, 2);
 
         assertEquals(2, bookings.size());
         assertEquals(bookings.get(0).getId(), secondBooking.getId());
@@ -483,10 +418,11 @@ public class BookingServiceTest {
 
     @Test
     void getAllBookingsByOwnerFuture() throws Exception {
-        when(bookingRepository.findAll()).thenReturn(List.of(booking, secondBooking));
+        Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
+        when(bookingRepository.findAll(page)).thenReturn(requestPage);
         when(itemJpaRepository.findById(1L)).thenReturn(Optional.of(item));
         when(userJpaRepository.findById(2L)).thenReturn(Optional.of(user));
-        List<BookingDto> bookings = bookingService.getAllBookingsByOwnerItems(2L, "FUTURE", null, null);
+        List<BookingDto> bookings = bookingService.getAllBookingsByOwnerItems(2L, "FUTURE", 0, 2);
 
         assertEquals(2, bookings.size());
         assertEquals(bookings.get(0).getId(), secondBooking.getId());
@@ -506,12 +442,13 @@ public class BookingServiceTest {
 
     @Test
     void getAllBookingsByOwnerPast() throws Exception {
+        Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
         booking.setStart(LocalDateTime.of(2022, 8, 15, 10, 15));
         booking.setEnd(LocalDateTime.of(2022, 8, 16, 10, 15));
-        when(bookingRepository.findAll()).thenReturn(List.of(booking, secondBooking));
+        when(bookingRepository.findAll(page)).thenReturn(requestPage);
         when(itemJpaRepository.findById(1L)).thenReturn(Optional.of(item));
         when(userJpaRepository.findById(2L)).thenReturn(Optional.of(user));
-        List<BookingDto> bookings = bookingService.getAllBookingsByOwnerItems(2L, "PAST", null, null);
+        List<BookingDto> bookings = bookingService.getAllBookingsByOwnerItems(2L, "PAST", 0, 2);
 
         assertEquals(1, bookings.size());
         booking.setStart(LocalDateTime.of(2022, 11, 15, 10, 15));
@@ -533,10 +470,11 @@ public class BookingServiceTest {
 
     @Test
     void getAllBookingsByOwnerCurrent() throws Exception {
-        when(bookingRepository.findAll()).thenReturn(List.of(booking, secondBooking));
+        Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
+        when(bookingRepository.findAll(page)).thenReturn(requestPage);
         when(itemJpaRepository.findById(1L)).thenReturn(Optional.of(item));
         when(userJpaRepository.findById(2L)).thenReturn(Optional.of(user));
-        List<BookingDto> bookings = bookingService.getAllBookingsByOwnerItems(2L, "CURRENT", null, null);
+        List<BookingDto> bookings = bookingService.getAllBookingsByOwnerItems(2L, "CURRENT", 0, 2);
 
         assertEquals(0, bookings.size());
     }
@@ -556,10 +494,11 @@ public class BookingServiceTest {
 
     @Test
     void getAllBookingsByOwnerWaiting() throws Exception {
-        when(bookingRepository.findAll()).thenReturn(List.of(booking, secondBooking));
+        Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
+        when(bookingRepository.findAll(page)).thenReturn(requestPage);
         when(itemJpaRepository.findById(1L)).thenReturn(Optional.of(item));
         when(userJpaRepository.findById(2L)).thenReturn(Optional.of(user));
-        List<BookingDto> bookings = bookingService.getAllBookingsByOwnerItems(2L, "WAITING", null, null);
+        List<BookingDto> bookings = bookingService.getAllBookingsByOwnerItems(2L, "WAITING", 0, 2);
 
         assertEquals(1, bookings.size());
     }
@@ -579,19 +518,21 @@ public class BookingServiceTest {
 
     @Test
     void getAllBookingsByOwnerRejected() throws Exception {
-        when(bookingRepository.findAll()).thenReturn(List.of(booking, secondBooking));
+        Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
+        when(bookingRepository.findAll(page)).thenReturn(requestPage);
         when(itemJpaRepository.findById(1L)).thenReturn(Optional.of(item));
         when(userJpaRepository.findById(2L)).thenReturn(Optional.of(user));
-        List<BookingDto> bookings = bookingService.getAllBookingsByOwnerItems(2L, "REJECTED", null, null);
+        List<BookingDto> bookings = bookingService.getAllBookingsByOwnerItems(2L, "REJECTED", 0, 2);
 
         assertEquals(0, bookings.size());
     }
 
     @Test
     void getAllBookingsByOwnerUnsupportedStatus() {
-        when(bookingRepository.findAll()).thenReturn(List.of(booking, secondBooking));
+        Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
+        when(bookingRepository.findAll(page)).thenReturn(requestPage);
         when(itemJpaRepository.findById(1L)).thenReturn(Optional.of(item));
         when(userJpaRepository.findById(2L)).thenReturn(Optional.of(user));
-        assertThrows(IncorrectBookingStatusException.class, () -> bookingService.getAllBookingsByOwnerItems(2L, "APPROVED", null, null));
+        assertThrows(IncorrectBookingStatusException.class, () -> bookingService.getAllBookingsByOwnerItems(2L, "APPROVED", 0, 2));
     }
 }
