@@ -148,9 +148,7 @@ public class BookingControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(List.of(bookingDto))))
-
-        ;
+                .andExpect(content().json(mapper.writeValueAsString(List.of(bookingDto))));
 
         verify(bookingService, times(1)).getAllBookings(1L, "ALL", 0, 1);
     }

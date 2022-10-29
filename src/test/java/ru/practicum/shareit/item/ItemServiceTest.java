@@ -70,7 +70,6 @@ public class ItemServiceTest {
     private BookingIncomingDto bookingIncomingDto;
     private BookingDto bookingDto;
     private Booking booking;
-    private Booking waitingBooking;
     private Booking secondBooking;
     private Item item;
     private ItemDto itemDto;
@@ -108,12 +107,6 @@ public class ItemServiceTest {
                 item,
                 user,
                 bookStatus);
-        waitingBooking = new Booking(1L,
-                LocalDateTime.of(2022, 11, 15, 10, 15),
-                LocalDateTime.of(2022, 12, 15, 10, 15),
-                item,
-                user,
-                BookStatus.WAITING);
         secondBooking = new Booking(2L,
                 LocalDateTime.of(2022, 11, 16, 10, 15),
                 LocalDateTime.of(2022, 12, 16, 10, 15),
