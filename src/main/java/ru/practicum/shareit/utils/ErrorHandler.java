@@ -1,6 +1,7 @@
 package ru.practicum.shareit.utils;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -11,11 +12,14 @@ import ru.practicum.shareit.booking.controller.BookingController;
 import ru.practicum.shareit.item.IncorrectCommentException;
 import ru.practicum.shareit.item.ItemNotAvailableException;
 import ru.practicum.shareit.item.ItemNotFoundException;
+import ru.practicum.shareit.item.RequestNotCorrectException;
 import ru.practicum.shareit.item.controller.ItemController;
+import ru.practicum.shareit.requests.RequestNotFoundException;
+import ru.practicum.shareit.requests.controller.ItemRequestController;
 import ru.practicum.shareit.user.*;
 import ru.practicum.shareit.user.controller.UserController;
 
-@RestControllerAdvice(assignableTypes = {ItemController.class, UserController.class, BookingController.class})
+@RestControllerAdvice(assignableTypes = {ItemController.class, UserController.class, BookingController.class, ItemRequestController.class})
 public class ErrorHandler {
 
     @ExceptionHandler
@@ -85,8 +89,32 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handle(final RequestNotFoundException e) {
+        return new ErrorResponse("Запрос не найден", e.getMessage());
+    }
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handle(final IncorrectCommentException e) {
         return new ErrorResponse("Проблема с комментарием", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handle(final RequestNotCorrectException e) {
+        return new ErrorResponse("Проблема с запросом", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handle(final PaginationNotCorrectException e) {
+        return new ErrorResponse("Проблема с запросом", e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handle(final MethodArgumentNotValidException e) {
+        return new ErrorResponse("Параметры запроса невалидны", e.getMessage());
     }
 }
