@@ -98,18 +98,6 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDto> getAllBookings(Long bookerId, String rawState, Integer from, Integer size) throws UserNotFoundException, IncorrectBookingStatusException, PaginationNotCorrectException {
-//        try {
-//            if (rawState.equals("ALL") ||
-//                    rawState.equals("FUTURE") ||
-//                    rawState.equals("CURRENT") ||
-//                    rawState.equals("PAST")) {
-//                BookCondition.valueOf(rawState);
-//            } else {
-//                BookStatus.valueOf(rawState);
-//            }
-//        } catch (IllegalArgumentException e) {
-//            throw new IncorrectBookingStatusException("некорректный статус бронирования");
-//        }
         List<Booking> bookings;
         if (userJpaRepository.findById(bookerId).isEmpty()) {
             throw new UserNotFoundException("Пользователя не существует");
@@ -150,18 +138,6 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public List<BookingDto> getAllBookingsByOwnerItems(Long owner, String state, Integer from, Integer size) throws UserNotFoundException, IncorrectBookingStatusException, PaginationNotCorrectException {
         List<Booking> bookings;
-//        try {
-//            if (state.equals("ALL") ||
-//                    state.equals("FUTURE") ||
-//                    state.equals("CURRENT") ||
-//                    state.equals("PAST")) {
-//                BookCondition.valueOf(state);
-//            } else {
-//                BookStatus.valueOf(state);
-//            }
-//        } catch (IllegalArgumentException e) {
-//            throw new IncorrectBookingStatusException("некорректный статус бронирования");
-//        }
 
         if (userJpaRepository.findById(owner).isEmpty()) {
             throw new UserNotFoundException("Пользователя не существует");

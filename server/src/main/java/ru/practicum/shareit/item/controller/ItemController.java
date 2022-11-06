@@ -15,7 +15,6 @@ import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.ValidationException;
 import ru.practicum.shareit.utils.PaginationNotCorrectException;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController

@@ -9,7 +9,6 @@ import ru.practicum.shareit.requests.service.ItemRequestService;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.utils.PaginationNotCorrectException;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
