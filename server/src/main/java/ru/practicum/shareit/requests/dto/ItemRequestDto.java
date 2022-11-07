@@ -9,6 +9,7 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @Setter
@@ -21,4 +22,17 @@ public class ItemRequestDto {
     private Long requestorId;
     private LocalDateTime created;
     private List<ItemDto> items;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ItemRequestDto that = (ItemRequestDto) o;
+        return Objects.equals(id, that.id) && Objects.equals(description, that.description) && Objects.equals(requestorId, that.requestorId) && Objects.equals(created, that.created) && Objects.equals(items, that.items);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, description, requestorId, created, items);
+    }
 }
