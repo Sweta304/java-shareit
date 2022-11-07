@@ -1,12 +1,14 @@
 package ru.practicum.shareit.item;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.model.Comment;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 public class CommentMapper {
 
     public static CommentDto toCommentDto(Comment comment, String authorName) {

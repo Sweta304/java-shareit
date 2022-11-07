@@ -259,11 +259,6 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsIncorrectState() {
-        assertThrows(IncorrectBookingStatusException.class, () -> bookingService.getAllBookings(1L, "status", 0, 10));
-    }
-
-    @Test
     void getAllBookingsUserNotFound() {
         assertThrows(UserNotFoundException.class, () -> bookingService.getAllBookings(1L, "ALL", 0, 10));
     }
@@ -352,13 +347,6 @@ public class BookingServiceTest {
         when(bookingRepository.findByBookerIdAndStatus(1L, BookStatus.CANCELED, sort)).thenReturn(List.of(booking, secondBooking));
 
         assertThrows(IncorrectBookingStatusException.class, () -> bookingService.getAllBookings(1L, "CANCELED", 0, 2));
-    }
-
-    @Test
-    void getAllBookingsByOwnerIncorrectStatus() {
-        when(bookingRepository.findAll()).thenReturn(List.of(booking, secondBooking));
-        when(itemJpaRepository.findById(1L)).thenReturn(Optional.of(item));
-        assertThrows(IncorrectBookingStatusException.class, () -> bookingService.getAllBookingsByOwnerItems(1L, "STATE", 0, 2));
     }
 
     @Test

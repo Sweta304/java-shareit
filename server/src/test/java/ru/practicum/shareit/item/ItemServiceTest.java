@@ -44,12 +44,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static ru.practicum.shareit.booking.BookingMapper.toBookerDto;
 import static ru.practicum.shareit.booking.BookingMapper.toBookingDto;
-import static ru.practicum.shareit.item.CommentMapper.toCommentDto;
 import static ru.practicum.shareit.item.ItemMapper.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -121,7 +120,7 @@ public class ItemServiceTest {
         itemRequest.setId(1L);
         item = fromItemDto(itemDto, user, itemRequest);
         comment = new Comment(1L, "text", item, user);
-        commentDto = toCommentDto(comment, user.getName());
+        commentDto = new CommentDto(1L, "text", user.getName(), LocalDateTime.now());
         last = toBookerDto(booking, item, user.getId());
         next = toBookerDto(secondBooking, item, owner.getId());
         itemWithBooking = toItemWithBooking(item, last, next, List.of(commentDto));
@@ -304,9 +303,9 @@ public class ItemServiceTest {
     @Test
     void addCommentTextEmpty() {
         when(bookingJpaRepository.findByBookerIdAndItemIdAndStatus(1L, 1L, BookStatus.APPROVED)).thenReturn(List.of(booking));
-        comment.setText("");
+        commentDto.setText("");
         assertThrows(IncorrectCommentException.class, () -> itemService.addComment(commentDto, 1L, 1L));
-        comment.setText("text");
+        commentDto.setText("text");
     }
 
     @Test
@@ -326,7 +325,7 @@ public class ItemServiceTest {
         when(bookingJpaRepository.findByBookerIdAndItemIdAndStatus(1L, 1L, BookStatus.APPROVED)).thenReturn(List.of(booking));
         when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(commentJpaRepository.save(comment)).thenReturn(comment);
+        when(commentJpaRepository.save(any())).thenReturn(comment);
         CommentDto actual = itemService.addComment(commentDto, 1L, 1L);
         assertEquals(commentDto.getId(), actual.getId());
         assertEquals(commentDto.getText(), actual.getText());
