@@ -33,7 +33,6 @@ import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.requests.repository.ItemRequestJpaRepository;
 import ru.practicum.shareit.user.IncorrectOwnerException;
 import ru.practicum.shareit.user.UserNotFoundException;
-import ru.practicum.shareit.user.ValidationException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserJpaRepository;
 import ru.practicum.shareit.utils.MyPageable;
@@ -144,14 +143,6 @@ public class ItemServiceTest {
     }
 
     @Test
-    void addItemNotValid() {
-        itemDto.setDescription(null);
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        assertThrows(ValidationException.class, () -> itemService.addItem(itemDto, 1L));
-        itemDto.setDescription("description");
-    }
-
-    @Test
     void addItemRequestNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         assertThrows(RequestNotFoundException.class, () -> itemService.addItem(itemDto, 1L));
@@ -258,20 +249,6 @@ public class ItemServiceTest {
         when(itemRepository.findAllByOwner(user, pageable)).thenReturn(itemsPage);
         when(commentJpaRepository.findCommentsByItemId(anyLong())).thenReturn(List.of(comment));
         List<ItemWithBooking> items = itemService.getItems(user.getId(), 0, 1);
-        assertEquals(1, items.size());
-        assertEquals(itemWithBooking.getId(), items.get(0).getId());
-        assertEquals(itemWithBooking.getLastBooking(), items.get(0).getLastBooking());
-        assertNull(items.get(0).getNextBooking());
-    }
-
-    @Test
-    void getItemsWithoutPagination() throws Exception {
-        when(itemRepository.findById(1L)).thenReturn(Optional.of(item));
-        when(bookingJpaRepository.findByItemId(1L)).thenReturn(List.of(booking));
-        when(userRepository.findById(user.getId())).thenReturn(Optional.of(user));
-        when(commentJpaRepository.findCommentsByItemId(anyLong())).thenReturn(List.of(comment));
-        when(itemRepository.findAllByOwner(user)).thenReturn(List.of(item));
-        List<ItemWithBooking> items = itemService.getItems(user.getId(), null, null);
         assertEquals(1, items.size());
         assertEquals(itemWithBooking.getId(), items.get(0).getId());
         assertEquals(itemWithBooking.getLastBooking(), items.get(0).getLastBooking());
