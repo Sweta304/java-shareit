@@ -24,11 +24,9 @@ import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.requests.repository.ItemRequestJpaRepository;
 import ru.practicum.shareit.user.IncorrectOwnerException;
 import ru.practicum.shareit.user.UserNotFoundException;
-import ru.practicum.shareit.user.ValidationException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserJpaRepository;
 import ru.practicum.shareit.utils.MyPageable;
-import ru.practicum.shareit.utils.PaginationNotCorrectException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -41,7 +39,6 @@ import static ru.practicum.shareit.booking.BookingMapper.toBookerDto;
 import static ru.practicum.shareit.item.CommentMapper.fromCommentDto;
 import static ru.practicum.shareit.item.CommentMapper.toCommentDto;
 import static ru.practicum.shareit.item.ItemMapper.*;
-import static ru.practicum.shareit.utils.PaginationValidation.validatePagination;
 
 @Service
 public class ItemServiceImpl implements ItemService {
@@ -63,11 +60,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public ItemDto addItem(ItemDto itemDto, Long owner) throws UserNotFoundException, ValidationException, RequestNotFoundException {
+    public ItemDto addItem(ItemDto itemDto, Long owner) throws UserNotFoundException, RequestNotFoundException {
         User user = userRepository.findById(owner).orElseThrow(() -> new UserNotFoundException("Пользователя не существует с id" + owner + "не существует"));
-        if (!ItemDto.validateItem(itemDto)) {
-            throw new ValidationException("параметры вещи заданы некорректно");
-        }
         ItemRequest itemRequest = null;
         if (itemDto.getRequestId() != null) {
             itemRequest = itemRequestJpaRepository.findById(itemDto.getRequestId()).orElseThrow(() -> new RequestNotFoundException("Запроса не существует"));
@@ -107,19 +101,12 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemWithBooking> getItems(Long owner, Integer from, Integer size) throws UserNotFoundException, PaginationNotCorrectException {
+    public List<ItemWithBooking> getItems(Long owner, Integer from, Integer size) throws UserNotFoundException {
         User user = userRepository.findById(owner).orElseThrow(() -> new UserNotFoundException("Пользователя не существует с id " + owner + " не существует"));
-        if (from != null && size != null && validatePagination(from, size)) {
-            Sort sortByCreated = Sort.by(Sort.Direction.DESC, "id");
-            Pageable page = new MyPageable(from, size, sortByCreated);
-            Page<Item> requestPage = itemRepository.findAllByOwner(user, page);
-            return requestPage.getContent()
-                    .stream()
-                    .map(x -> toItemWithBooking(x, findLastBookingForItem(x.getId()), findNextBookingForItem(x.getId()), getCommentsList(commentJpaRepository.findCommentsByItemId(x.getId()))))
-                    .sorted(Comparator.comparing(ItemWithBooking::getId))
-                    .collect(Collectors.toList());
-        }
-        return itemRepository.findAllByOwner(user)
+        Sort sortByCreated = Sort.by(Sort.Direction.DESC, "id");
+        Pageable page = new MyPageable(from, size, sortByCreated);
+        Page<Item> requestPage = itemRepository.findAllByOwner(user, page);
+        return requestPage.getContent()
                 .stream()
                 .map(x -> toItemWithBooking(x, findLastBookingForItem(x.getId()), findNextBookingForItem(x.getId()), getCommentsList(commentJpaRepository.findCommentsByItemId(x.getId()))))
                 .sorted(Comparator.comparing(ItemWithBooking::getId))
@@ -127,25 +114,21 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> searchItem(String text, Integer from, Integer size) throws PaginationNotCorrectException {
+    public List<ItemDto> searchItem(String text, Integer from, Integer size)  {
         if (text.isEmpty() || text.isBlank()) {
             return new ArrayList<>();
         }
         String lowerText = text.toLowerCase();
-        if (validatePagination(from, size)) {
-            Sort sortByCreated = Sort.by(Sort.Direction.ASC, "id");
-            Pageable page = new MyPageable(from, size, sortByCreated);
-            Page<Item> requestPage = itemRepository.findAll(page);
-            return requestPage.getContent()
-                    .stream()
-                    .filter((x -> (x.getName().toLowerCase(new Locale("RU")).contains(lowerText))
-                            || (x.getDescription().toLowerCase(new Locale("RU")).contains(lowerText))))
-                    .filter(x -> x.getAvailable())
-                    .map(x -> toItemDto(x))
-                    .collect(Collectors.toList());
-        } else {
-            throw new PaginationNotCorrectException("Некорректно заданы параметры постраничного вывода");
-        }
+        Sort sortByCreated = Sort.by(Sort.Direction.ASC, "id");
+        Pageable page = new MyPageable(from, size, sortByCreated);
+        Page<Item> requestPage = itemRepository.findAll(page);
+        return requestPage.getContent()
+                .stream()
+                .filter((x -> (x.getName().toLowerCase(new Locale("RU")).contains(lowerText))
+                        || (x.getDescription().toLowerCase(new Locale("RU")).contains(lowerText))))
+                .filter(x -> x.getAvailable())
+                .map(x -> toItemDto(x))
+                .collect(Collectors.toList());
     }
 
     @Override

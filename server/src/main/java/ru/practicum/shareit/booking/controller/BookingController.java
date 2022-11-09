@@ -12,7 +12,7 @@ import ru.practicum.shareit.item.ItemNotAvailableException;
 import ru.practicum.shareit.item.ItemNotFoundException;
 import ru.practicum.shareit.user.IncorrectOwnerException;
 import ru.practicum.shareit.user.UserNotFoundException;
-import ru.practicum.shareit.utils.PaginationNotCorrectException;
+
 
 import java.util.List;
 
@@ -49,7 +49,7 @@ public class BookingController {
     public List<BookingDto> getAllBookings(@RequestHeader("X-Sharer-User-Id") Long owner,
                                            @RequestParam(required = false, defaultValue = "ALL") String state,
                                            @RequestParam(required = false, defaultValue = "0") Integer from,
-                                           @RequestParam(required = false, defaultValue = "20") Integer size) throws UserNotFoundException, IncorrectBookingStatusException, PaginationNotCorrectException {
+                                           @RequestParam(required = false, defaultValue = "20") Integer size) throws UserNotFoundException, IncorrectBookingStatusException {
         return bookingService.getAllBookings(owner, state, from, size);
     }
 
@@ -57,7 +57,7 @@ public class BookingController {
     public List<BookingDto> getAllBookingsByOwnerItems(@RequestHeader("X-Sharer-User-Id") Long owner,
                                                        @RequestParam(required = false, defaultValue = "ALL") String state,
                                                        @RequestParam(required = false, defaultValue = "0") Integer from,
-                                                       @RequestParam(required = false, defaultValue = "20") Integer size) throws UserNotFoundException, IncorrectBookingStatusException, PaginationNotCorrectException {
+                                                       @RequestParam(required = false, defaultValue = "20") Integer size) throws UserNotFoundException, IncorrectBookingStatusException {
         return bookingService.getAllBookingsByOwnerItems(owner, state, from, size);
     }
 }

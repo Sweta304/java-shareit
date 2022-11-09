@@ -25,7 +25,7 @@ import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserJpaRepository;
 import ru.practicum.shareit.utils.MyPageable;
-import ru.practicum.shareit.utils.PaginationNotCorrectException;
+
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -132,12 +132,6 @@ public class ItemRequestServiceTest {
     @Test
     void getAllItemRequestDtosUserNotFound() {
         assertThrows(UserNotFoundException.class, () -> itemRequestService.getAllItemRequestDtos(1L, 0, 1));
-    }
-
-    @Test
-    void getAllItemRequestDtosIncorrectPagination() {
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        assertThrows(PaginationNotCorrectException.class, () -> itemRequestService.getAllItemRequestDtos(1L, 0, 0));
     }
 
     @Test

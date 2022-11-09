@@ -7,7 +7,7 @@ import ru.practicum.shareit.requests.RequestNotFoundException;
 import ru.practicum.shareit.requests.dto.ItemRequestDto;
 import ru.practicum.shareit.requests.service.ItemRequestService;
 import ru.practicum.shareit.user.UserNotFoundException;
-import ru.practicum.shareit.utils.PaginationNotCorrectException;
+
 
 import java.util.List;
 
@@ -32,7 +32,7 @@ public class ItemRequestController {
     }
 
     @GetMapping("/all")
-    public List<ItemRequestDto> getAllItemRequestDtos(@RequestHeader("X-Sharer-User-Id") Long requestor, @RequestParam(required = false, defaultValue = "0") Integer from, @RequestParam(required = false, defaultValue = "20") Integer size) throws UserNotFoundException, PaginationNotCorrectException {
+    public List<ItemRequestDto> getAllItemRequestDtos(@RequestHeader("X-Sharer-User-Id") Long requestor, @RequestParam(required = false, defaultValue = "0") Integer from, @RequestParam(required = false, defaultValue = "20") Integer size) throws UserNotFoundException {
         return itemRequestService.getAllItemRequestDtos(requestor, from, size);
     }
 

@@ -21,7 +21,7 @@ import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserJpaRepository;
 import ru.practicum.shareit.utils.MyPageable;
-import ru.practicum.shareit.utils.PaginationNotCorrectException;
+
 
 import java.time.LocalDateTime;
 import java.util.Comparator;
@@ -30,7 +30,6 @@ import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.booking.BookingMapper.fromBookingIncomingDto;
 import static ru.practicum.shareit.booking.BookingMapper.toBookingDto;
-import static ru.practicum.shareit.utils.PaginationValidation.validatePagination;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -97,13 +96,10 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllBookings(Long bookerId, String rawState, Integer from, Integer size) throws UserNotFoundException, IncorrectBookingStatusException, PaginationNotCorrectException {
+    public List<BookingDto> getAllBookings(Long bookerId, String rawState, Integer from, Integer size) throws UserNotFoundException, IncorrectBookingStatusException {
         List<Booking> bookings;
         if (userJpaRepository.findById(bookerId).isEmpty()) {
             throw new UserNotFoundException("Пользователя не существует");
-        }
-        if (!validatePagination(from, size)) {
-            throw new PaginationNotCorrectException("Некорректные условия постраничного вывода");
         }
         Sort sort = Sort.by(Sort.Direction.DESC, "start");
         Pageable page = new MyPageable(from, size, sort);
@@ -136,16 +132,13 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getAllBookingsByOwnerItems(Long owner, String state, Integer from, Integer size) throws UserNotFoundException, IncorrectBookingStatusException, PaginationNotCorrectException {
+    public List<BookingDto> getAllBookingsByOwnerItems(Long owner, String state, Integer from, Integer size) throws UserNotFoundException, IncorrectBookingStatusException {
         List<Booking> bookings;
 
         if (userJpaRepository.findById(owner).isEmpty()) {
             throw new UserNotFoundException("Пользователя не существует");
         }
         Sort sort = Sort.by(Sort.Direction.DESC, "start");
-        if (!validatePagination(from, size)) {
-            throw new PaginationNotCorrectException("Некорректные условия постраничного вывода");
-        }
         Pageable page = new MyPageable(from, size, sort);
         Page<Booking> requestPage = bookingJpaRepository.findAll(page);
         List<Booking> rawBookings = requestPage.getContent()

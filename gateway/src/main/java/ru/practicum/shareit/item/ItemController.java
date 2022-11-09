@@ -7,6 +7,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.exception.IncorrectOwnerException;
 import ru.practicum.shareit.exception.ItemNotFoundException;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 
@@ -25,7 +26,10 @@ public class ItemController {
 
     @PostMapping
     public ResponseEntity<Object> addItem(@RequestHeader("X-Sharer-User-Id") @Positive Long owner,
-                                          @RequestBody @Valid ItemDto itemDto) {
+                                          @RequestBody @Valid ItemDto itemDto) throws ValidationException {
+        if (!ItemDto.validateItem(itemDto)) {
+            throw new ValidationException("параметры вещи заданы некорректно");
+        }
         log.info("Creating item {}, userId={}", itemDto, owner);
         return itemClient.addItem(owner, itemDto);
     }

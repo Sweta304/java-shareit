@@ -14,7 +14,6 @@ import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserJpaRepository;
 import ru.practicum.shareit.utils.MyPageable;
-import ru.practicum.shareit.utils.PaginationNotCorrectException;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.requests.ItemRequestMapper.fromItemRequestDto;
 import static ru.practicum.shareit.requests.ItemRequestMapper.toItemRequestDto;
-import static ru.practicum.shareit.utils.PaginationValidation.validatePagination;
 
 @Service
 public class ItemRequestServiceImpl implements ItemRequestService {
@@ -64,13 +62,10 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     }
 
     @Override
-    public List<ItemRequestDto> getAllItemRequestDtos(Long requestor, Integer from, Integer size) throws UserNotFoundException, PaginationNotCorrectException {
+    public List<ItemRequestDto> getAllItemRequestDtos(Long requestor, Integer from, Integer size) throws UserNotFoundException {
         User user = userJpaRepository.findById(requestor).orElseThrow(() -> new UserNotFoundException("Пользователя не существует"));
         List<ItemRequestDto> requests;
 
-        if (!validatePagination(from, size)) {
-            throw new PaginationNotCorrectException("Неверно заданы параметры вывода страниц");
-        }
         Sort sortByCreated = Sort.by(Sort.Direction.DESC, "created");
         Pageable page = new MyPageable(from, size, sortByCreated);
         Page<ItemRequest> requestPage = itemRequestJpaRepository.findAll(page);

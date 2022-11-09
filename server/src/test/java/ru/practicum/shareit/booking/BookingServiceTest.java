@@ -26,7 +26,7 @@ import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserJpaRepository;
 import ru.practicum.shareit.utils.MyPageable;
-import ru.practicum.shareit.utils.PaginationNotCorrectException;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -264,12 +264,6 @@ public class BookingServiceTest {
     }
 
     @Test
-    void getAllBookingsIncorrectPagination() {
-        when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        assertThrows(PaginationNotCorrectException.class, () -> bookingService.getAllBookings(1L, "ALL", -1, 10));
-    }
-
-    @Test
     void getAllBookingsPagination() throws Exception {
         Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
         when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
@@ -354,16 +348,6 @@ public class BookingServiceTest {
         when(bookingRepository.findAll()).thenReturn(List.of(booking, secondBooking));
         when(itemJpaRepository.findById(1L)).thenReturn(Optional.of(item));
         assertThrows(UserNotFoundException.class, () -> bookingService.getAllBookingsByOwnerItems(1L, "WAITING", 0, 2));
-    }
-
-    @Test
-    void getAllBookingsByOwnerIncorrectPagination() {
-        Page<Booking> requestPage = new PageImpl<>(List.of(booking, secondBooking));
-        when(bookingRepository.findAll()).thenReturn(List.of(booking, secondBooking));
-        when(bookingRepository.findAll(page)).thenReturn(requestPage);
-        when(itemJpaRepository.findById(1L)).thenReturn(Optional.of(item));
-        when(userJpaRepository.findById(1L)).thenReturn(Optional.of(user));
-        assertThrows(PaginationNotCorrectException.class, () -> bookingService.getAllBookingsByOwnerItems(1L, "ALL", 0, 0));
     }
 
     @Test

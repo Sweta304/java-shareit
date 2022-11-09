@@ -19,18 +19,6 @@ public class ItemDto {
     private Long id;
     private Long requestId;
 
-    public static boolean validateItem(ItemDto itemDto) {
-        boolean isValid = true;
-        if (itemDto.getDescription() == null
-                || itemDto.getName() == null
-                || itemDto.getName().isEmpty()
-                || itemDto.getName().isBlank()
-                || itemDto.getAvailable() == null) {
-            isValid = false;
-        }
-        return isValid;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

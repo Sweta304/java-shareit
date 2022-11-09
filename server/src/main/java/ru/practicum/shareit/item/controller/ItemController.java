@@ -13,7 +13,7 @@ import ru.practicum.shareit.requests.RequestNotFoundException;
 import ru.practicum.shareit.user.IncorrectOwnerException;
 import ru.practicum.shareit.user.UserNotFoundException;
 import ru.practicum.shareit.user.ValidationException;
-import ru.practicum.shareit.utils.PaginationNotCorrectException;
+
 
 import java.util.List;
 
@@ -44,12 +44,12 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemWithBooking> getItems(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam(required = false, defaultValue = "0") Integer from, @RequestParam(required = false, defaultValue = "20") Integer size) throws UserNotFoundException, PaginationNotCorrectException {
+    public List<ItemWithBooking> getItems(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam(required = false, defaultValue = "0") Integer from, @RequestParam(required = false, defaultValue = "20") Integer size) throws UserNotFoundException {
         return itemService.getItems(owner, from, size);
     }
 
     @GetMapping("/search")
-    public List<ItemDto> searchItem(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam String text, @RequestParam(required = false, defaultValue = "0") Integer from, @RequestParam(required = false, defaultValue = "20") Integer size) throws PaginationNotCorrectException {
+    public List<ItemDto> searchItem(@RequestHeader("X-Sharer-User-Id") Long owner, @RequestParam String text, @RequestParam(required = false, defaultValue = "0") Integer from, @RequestParam(required = false, defaultValue = "20") Integer size)  {
         return itemService.searchItem(text, from, size);
     }
 
