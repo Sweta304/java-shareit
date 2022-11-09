@@ -25,7 +25,7 @@ public interface ItemService {
 
     List<ItemWithBooking> getItems(Long owner, Integer from, Integer size) throws UserNotFoundException;
 
-    List<ItemDto> searchItem(String text, Integer from, Integer size) ;
+    List<ItemDto> searchItem(String text, Integer from, Integer size);
 
     CommentDto addComment(CommentDto comment, Long itemId, Long owner) throws IncorrectBookingException, IncorrectCommentException;
 }
