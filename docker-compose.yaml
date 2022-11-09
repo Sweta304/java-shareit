@@ -11,7 +11,7 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      - server
     environment:
       - SHAREIT_SERVER_URL=http://server:9090
 
@@ -22,7 +22,7 @@ services:
     ports:
       - "9090:9090"
     depends_on:
-      - gateway
+      - db
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/shareitdock
       - SPRING_DATASOURCE_USERNAME=root

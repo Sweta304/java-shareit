@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
-import java.util.Objects;
 
 
 @Entity
@@ -24,19 +22,5 @@ public class User {
     @Column(name = "user_name")
     private String name;
     @Column(name = "email")
-    @Email
     private String email;
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return id.equals(user.id) || email.equals(user.email) || name.equals(user.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, email);
-    }
 }

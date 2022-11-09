@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static ru.practicum.shareit.user.UserMapper.toUserDto;
@@ -52,7 +53,7 @@ public class UserServiceTest {
 
     @Test
     void addUser() throws Exception {
-        when(userRepository.save(user)).thenReturn(user);
+        when(userRepository.save(any())).thenReturn(user);
         UserDto userDtoSample = userService.addUser(toUserDto(user));
 
         assertNotNull(userDto);

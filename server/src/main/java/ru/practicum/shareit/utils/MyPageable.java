@@ -84,4 +84,9 @@ public class MyPageable implements Pageable {
         MyPageable that = (MyPageable) o;
         return offset == that.offset && size == that.size && Objects.equals(sort, that.sort);
     }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(offset, size, sort);
+    }
 }

@@ -111,7 +111,6 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.start", is(bookingDto.getStart().format(format)), String.class))
                 .andExpect(jsonPath("$.end", is(bookingDto.getEnd().format(format)), String.class))
                 .andExpect(jsonPath("$.item", is(bookingDto.getItem()), ItemDto.class))
-                .andExpect(jsonPath("$.booker", is(user), User.class))
                 .andExpect(jsonPath("$.status", is(bookingDto.getStatus().toString()), String.class));
 
 
